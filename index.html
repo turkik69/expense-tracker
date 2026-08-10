@@ -1,387 +1,456 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>مصروفي</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>نموذج تجريبي — تتبع المصاريف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0D1B2E; --navy-card:#16283F; --navy-card-alt:#1C3350;
+    --gold:#D4AF6A; --gold-bright:#E8C888; --cream:#F2EDE1; --muted:#8592A6;
+    --warn:#C1614A; --hairline: rgba(212,175,106,0.16);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ font-family:'Cairo','Segoe UI',Tahoma,sans-serif; background:var(--navy-deep); color:var(--cream); min-height:100vh; display:flex; justify-content:center; }
+  .app{ width:100%; max-width:430px; min-height:100vh; display:flex; flex-direction:column; position:relative; }
+  header{ padding:20px 20px 8px; }
+  header .eyebrow{ font-size:12px; color:var(--muted); font-weight:600; }
+  header h1{ font-size:20px; font-weight:800; margin-top:2px; }
+  main{ flex:1; padding:12px 20px 110px; overflow-y:auto; }
+  .screen{display:none;}
+  .screen.active{display:block; animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .hero{ background:linear-gradient(155deg, var(--navy-card), var(--navy-card-alt)); border:1px solid var(--hairline); border-radius:20px; padding:22px 20px; margin-bottom:18px; }
+  .hero .label{font-size:13px; color:var(--muted); font-weight:600;}
+  .hero .amount{ font-size:40px; font-weight:900; color:var(--gold-bright); margin:4px 0 2px; letter-spacing:-0.5px; }
+  .hero .amount span{font-size:18px; font-weight:700; color:var(--gold);}
+  .hero .sub{font-size:13px; color:var(--muted); margin-bottom:14px;}
+  .progress-track{height:8px; border-radius:99px; background:rgba(255,255,255,0.06); overflow:hidden;}
+  .progress-fill{height:100%; border-radius:99px; background:linear-gradient(90deg, var(--gold), var(--gold-bright)); transition:width .5s ease;}
+
+  .section-title{font-size:13px; font-weight:700; color:var(--muted); margin:22px 0 10px;}
+
+  .cat-row, .tx-row{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--hairline); }
+  .tx-row{cursor:pointer;}
+  .cat-row:last-child, .tx-row:last-child{border-bottom:none;}
+  .cat-icon{ width:36px; height:36px; border-radius:11px; background:var(--navy-card-alt); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .cat-info{flex:1; min-width:0;}
+  .cat-name, .tx-name{font-size:14px; font-weight:700;}
+  .cat-bar-track{height:4px; border-radius:99px; background:rgba(255,255,255,0.06); margin-top:6px;}
+  .cat-bar-fill{height:100%; border-radius:99px; transition:width .3s ease;}
+  .cat-amount, .tx-amount{font-size:14px; font-weight:800; flex-shrink:0;}
+  .cat-amount span{font-weight:600; font-size:11px;}
+  .tx-meta{font-size:12px; color:var(--muted); margin-top:2px;}
+  .tx-tag{ font-size:11px; font-weight:700; color:var(--gold); background:rgba(212,175,106,0.1); padding:2px 8px; border-radius:99px; display:inline-block; margin-top:3px; }
+
+  .field-label{font-size:13px; font-weight:700; color:var(--muted); margin-bottom:8px; display:block;}
+  textarea, input, select{ width:100%; background:var(--navy-card); border:1px solid var(--hairline); border-radius:14px; padding:13px 14px; color:var(--cream); font-family:'Cairo',sans-serif; font-size:14px; font-weight:500; }
+  textarea{min-height:96px; resize:none; line-height:1.7;}
+  textarea:focus, input:focus, select:focus{outline:none; border-color:var(--gold); box-shadow:0 0 0 3px rgba(212,175,106,0.15);}
+  .hint{font-size:11px; color:var(--muted); margin:6px 2px 0;}
+
+  .msg-preview{ background:var(--navy-card); border:1px solid var(--hairline); border-radius:14px; padding:14px; font-size:13px; line-height:1.9; color:var(--muted); display:none; margin-top:12px; }
+  .msg-preview.show{display:block;}
+  mark.hl{ display:inline-block; background:rgba(212,175,106,0.12); color:var(--gold-bright); font-weight:800; padding:1px 4px; border-radius:5px; animation:pop .5s ease; }
+  @keyframes pop{ 0%{background:rgba(212,175,106,0); transform:scale(1);} 40%{background:rgba(212,175,106,0.4); transform:scale(1.05);} 100%{background:rgba(212,175,106,0.12); transform:scale(1);} }
+
+  .btn{ width:100%; padding:14px; border:none; border-radius:14px; font-family:'Cairo',sans-serif; font-weight:800; font-size:14px; cursor:pointer; transition:transform .15s ease; }
+  .btn:active{transform:scale(0.98);}
+  .btn:focus-visible{outline:2px solid var(--gold-bright); outline-offset:2px;}
+  .btn-gold{background:linear-gradient(120deg, var(--gold), var(--gold-bright)); color:var(--navy-deep);}
+  .btn-outline{background:transparent; border:1px solid var(--hairline); color:var(--cream);}
+  .btn-text-danger{ width:100%; background:none; border:none; color:var(--warn); font-family:'Cairo',sans-serif; font-weight:700; font-size:13px; padding:12px; cursor:pointer; margin-top:4px; }
+
+  .confirm-card{ background:var(--navy-card); border:1px solid var(--gold); border-radius:16px; padding:16px; margin-top:14px; display:none; animation:slideUp .35s ease; }
+  .confirm-card.show{display:block;}
+  @keyframes slideUp{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);}}
+  .confirm-row{margin-bottom:12px;}
+
+  .divider{ display:flex; align-items:center; gap:10px; margin:22px 0 16px; color:var(--muted); font-size:12px; font-weight:600; }
+  .divider::before, .divider::after{content:''; flex:1; height:1px; background:var(--hairline);}
+
+  .filter-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:6px; }
+  .filter-row::-webkit-scrollbar{display:none;}
+  .filter-chip{ flex-shrink:0; padding:8px 14px; border-radius:99px; background:var(--navy-card); border:1px solid var(--hairline); color:var(--muted); font-family:'Cairo',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .filter-chip.active{ background:var(--gold); color:var(--navy-deep); border-color:var(--gold); }
+
+  .toast{ position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--gold-bright); color:var(--navy-deep); font-weight:800; font-size:13px; padding:10px 20px; border-radius:99px; opacity:0; transition:all .3s ease; pointer-events:none; white-space:nowrap; z-index:40; }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.55); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:30; }
+  .modal-backdrop.show{opacity:1; pointer-events:auto;}
+  .edit-sheet{ position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%); width:100%; max-width:430px; background:var(--navy-card); border-top:1px solid var(--hairline); border-radius:20px 20px 0 0; padding:8px 20px calc(20px + env(safe-area-inset-bottom)); transition:transform .3s ease; z-index:31; }
+  .edit-sheet.show{transform:translateX(-50%) translateY(0);}
+  .sheet-handle{ width:36px; height:4px; background:var(--hairline); border-radius:99px; margin:8px auto 18px; }
+
+  nav{ position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; background:rgba(13,27,46,0.92); backdrop-filter:blur(10px); border-top:1px solid var(--hairline); display:flex; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); z-index:20; }
+  .nav-btn{ flex:1; background:none; border:none; color:var(--muted); font-family:'Cairo',sans-serif; font-size:11px; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; cursor:pointer; }
+  .nav-btn .ic{font-size:18px;}
+  .nav-btn.active{color:var(--gold-bright);}
+  .nav-btn:focus-visible{outline:2px solid var(--gold-bright); outline-offset:2px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
+</style>
 </head>
-<body style="margin:0;">
-<div id="root"></div>
+<body>
+<div class="app">
+  <header>
+    <div class="eyebrow">نموذج تفاعلي — للتجربة فقط</div>
+    <h1 id="pageTitle">الرئيسية</h1>
+  </header>
 
-<!-- ============================================
-     الخطوة 1: عبّي بيانات مشروع Supabase هنا
-     (Project Settings → API في لوحة Supabase)
-============================================ -->
+  <main>
+    <section class="screen active" id="home">
+      <div class="hero">
+        <div class="label">إجمالي هذا الشهر</div>
+        <div class="amount" id="totalAmount">0.000 <span>ر.ع</span></div>
+        <div class="sub" id="budgetSub"></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      </div>
+      <div class="section-title">حسب الفئة</div>
+      <div id="catList"></div>
+      <div class="section-title">آخر العمليات</div>
+      <div id="txList"></div>
+    </section>
+
+    <section class="screen" id="add">
+      <label class="field-label">الصقي نص رسالة الخصم (أو شاركيها من تطبيق الرسائل)</label>
+      <textarea id="smsInput">عزيزي العميل، تم خصم مبلغ 8.750 ر.ع من حسابك لدى مطعم بيت الشاي بتاريخ 09/08/2026 الساعة 13:45. الرصيد المتاح: 245.300 ر.ع</textarea>
+      <div class="hint">مثال توضيحي — الصقي رسالتك الفعلية لتجربة حقيقية</div>
+      <div class="msg-preview" id="msgPreview"></div>
+      <div style="height:12px"></div>
+      <button class="btn btn-gold" id="extractBtn">✨ استخراج البيانات</button>
+
+      <div class="confirm-card" id="confirmCard">
+        <div class="confirm-row"><label class="field-label">المبلغ</label><input type="text" id="cAmount" inputmode="decimal"></div>
+        <div class="confirm-row"><label class="field-label">الجهة</label><input type="text" id="cMerchant"></div>
+        <div class="confirm-row"><label class="field-label">التصنيف</label><select id="cCategory"></select></div>
+        <button class="btn btn-gold" id="confirmBtn">تأكيد الإضافة</button>
+      </div>
+
+      <div class="divider">أو إدخال يدوي</div>
+      <div class="confirm-row"><label class="field-label">المبلغ</label><input type="text" id="mAmount" inputmode="decimal" placeholder="0.000"></div>
+      <div class="confirm-row"><label class="field-label">الجهة</label><input type="text" id="mMerchant" placeholder="مثال: كارفور"></div>
+      <div class="confirm-row"><label class="field-label">التصنيف</label><select id="mCategory"></select></div>
+      <button class="btn btn-outline" id="manualBtn">إضافة يدوياً</button>
+
+      <div style="height:14px"></div>
+      <button class="btn btn-outline" disabled style="opacity:.5">📷 تصوير فاتورة — قريباً بالنسخة الكاملة</button>
+    </section>
+
+    <section class="screen" id="history">
+      <div class="filter-row" id="filterRow"></div>
+      <div id="historyList"></div>
+    </section>
+
+    <section class="screen" id="settings">
+      <div class="section-title">ميزانية كل فئة (شهرياً، ر.ع)</div>
+      <div id="budgetInputs"></div>
+      <button class="btn btn-gold" id="saveBudgetsBtn" style="margin-top:6px">حفظ الميزانيات</button>
+      <div class="divider">البيانات</div>
+      <button class="btn btn-outline" id="exportBtn">⬇️ تصدير كل المصاريف (CSV)</button>
+    </section>
+  </main>
+
+  <div class="toast" id="toast">تمّ ✓</div>
+  <div class="modal-backdrop" id="modalBackdrop"></div>
+  <div class="edit-sheet" id="editSheet">
+    <div class="sheet-handle"></div>
+    <div class="confirm-row"><label class="field-label">المبلغ</label><input type="text" id="eAmount" inputmode="decimal"></div>
+    <div class="confirm-row"><label class="field-label">الجهة</label><input type="text" id="eMerchant"></div>
+    <div class="confirm-row"><label class="field-label">التصنيف</label><select id="eCategory"></select></div>
+    <button class="btn btn-gold" id="saveEditBtn">حفظ التعديل</button>
+    <button class="btn-text-danger" id="deleteBtn">حذف المصروف</button>
+  </div>
+
+  <nav>
+    <button class="nav-btn active" data-screen="home"><span class="ic">🏠</span>الرئيسية</button>
+    <button class="nav-btn" data-screen="add"><span class="ic">➕</span>إضافة</button>
+    <button class="nav-btn" data-screen="history"><span class="ic">📋</span>السجل</button>
+    <button class="nav-btn" data-screen="settings"><span class="ic">⚙️</span>الإعدادات</button>
+  </nav>
+</div>
+
 <script>
-  window.SUPABASE_URL = "ضع-هنا-Project-URL";
-  window.SUPABASE_ANON_KEY = "ضع-هنا-anon-public-key";
-</script>
+const CATS = {
+  'مطاعم ومقاهي': {icon:'🍽️', keywords:['مطعم','كافيه','قهوة','بيت الشاي','ستاربكس','كوستا']},
+  'بقالة': {icon:'🛒', keywords:['كارفور','لولو','سلطان سنتر','سوبرماركت','بقالة']},
+  'مواصلات': {icon:'🚗', keywords:['بنزين','تاكسي','أوبر','كريم','محطة']},
+  'فواتير': {icon:'🧾', keywords:['اتصالات','عمانتل','أوريدو','كهرباء','مياه']},
+  'تسوق': {icon:'🛍️', keywords:['سنتر','مول','ازياء','ملابس']},
+  'أخرى': {icon:'💳', keywords:[]}
+};
 
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+let categoryBudgets = {
+  'مطاعم ومقاهي': 40, 'بقالة': 80, 'مواصلات': 50,
+  'فواتير': 40, 'تسوق': 60, 'أخرى': 30
+};
 
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useMemo, useCallback } = React;
-const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true },
+function daysAgo(n){ const d = new Date(); d.setDate(d.getDate()-n); d.setHours(12,0,0,0); return d; }
+
+let nextId = 7;
+let expenses = [
+  {id:1, amount:24.500, merchant:'لولو هايبرماركت', category:'بقالة', date:daysAgo(1)},
+  {id:2, amount:3.200, merchant:'كوستا كوفي', category:'مطاعم ومقاهي', date:daysAgo(2)},
+  {id:3, amount:15.000, merchant:'محطة بترول', category:'مواصلات', date:daysAgo(3)},
+  {id:4, amount:45.000, merchant:'مركز مسقط سيتي', category:'تسوق', date:daysAgo(4)},
+  {id:5, amount:18.900, merchant:'عمانتل', category:'فواتير', date:daysAgo(7)},
+  {id:6, amount:12.750, merchant:'مطعم بيت الشاي', category:'مطاعم ومقاهي', date:daysAgo(7)}
+];
+
+let activeFilter = 'الكل';
+let editingId = null;
+
+function guessCategory(text){
+  text = text || '';
+  for(const [cat, data] of Object.entries(CATS)){
+    if(data.keywords.some(k => text.includes(k))) return cat;
+  }
+  return 'أخرى';
+}
+
+function formatRelative(date){
+  const diffDays = Math.floor((new Date() - date) / 86400000);
+  if(diffDays <= 0) return 'اليوم';
+  if(diffDays === 1) return 'أمس';
+  if(diffDays < 7) return `قبل ${diffDays} أيام`;
+  return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`;
+}
+
+function populateSelects(){
+  document.querySelectorAll('#cCategory, #mCategory, #eCategory').forEach(sel=>{
+    sel.innerHTML = Object.keys(CATS).map(c=>`<option value="${c}">${CATS[c].icon} ${c}</option>`).join('');
+  });
+}
+
+function renderTxList(containerId, list){
+  const container = document.getElementById(containerId);
+  if(!list.length){
+    container.innerHTML = `<div style="color:var(--muted); font-size:13px; padding:10px 0;">ما فيه عمليات</div>`;
+    return;
+  }
+  container.innerHTML = list.map(e => `
+    <div class="tx-row" data-id="${e.id}">
+      <div class="cat-icon">${CATS[e.category]?.icon || '💳'}</div>
+      <div class="cat-info">
+        <div class="tx-name">${e.merchant}</div>
+        <div class="tx-meta">${formatRelative(e.date)} <span class="tx-tag">${e.category}</span></div>
+      </div>
+      <div class="tx-amount" style="color:var(--gold-bright)">${e.amount.toFixed(3)}</div>
+    </div>`).join('');
+  container.querySelectorAll('.tx-row').forEach(row=>{
+    row.addEventListener('click', ()=> openEdit(parseInt(row.dataset.id)));
+  });
+}
+
+function renderHome(){
+  const total = expenses.reduce((s,e)=>s+e.amount,0);
+  const totalBudget = Object.values(categoryBudgets).reduce((a,b)=>a+b,0) || 1;
+  document.getElementById('totalAmount').innerHTML = total.toFixed(3) + ' <span>ر.ع</span>';
+  const pct = Math.min(100, (total/totalBudget)*100);
+  const fill = document.getElementById('progressFill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct>=90 ? 'var(--warn)' : 'linear-gradient(90deg, var(--gold), var(--gold-bright))';
+  document.getElementById('budgetSub').textContent = `من إجمالي ميزانية ${totalBudget.toFixed(3)} ر.ع — متبقّي ${Math.max(0,totalBudget-total).toFixed(3)} ر.ع`;
+
+  const byCat = {};
+  expenses.forEach(e=>{ byCat[e.category] = (byCat[e.category]||0) + e.amount; });
+  const entries = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('catList').innerHTML = entries.length ? entries.map(([cat, amt])=>{
+    const budget = categoryBudgets[cat] || 1;
+    const ratio = amt / budget;
+    const warn = ratio >= 0.8;
+    const color = warn ? 'var(--warn)' : 'var(--gold)';
+    return `
+    <div class="cat-row">
+      <div class="cat-icon">${CATS[cat]?.icon || '💳'}</div>
+      <div class="cat-info">
+        <div class="cat-name">${cat}${ratio>=1 ? ' ⚠️' : ''}</div>
+        <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.min(100,ratio*100)}%; background:${color}"></div></div>
+      </div>
+      <div class="cat-amount" style="color:${warn?'var(--warn)':'var(--gold-bright)'}">${amt.toFixed(3)} <span>/${budget.toFixed(0)}</span></div>
+    </div>`;
+  }).join('') : `<div style="color:var(--muted); font-size:13px; padding:10px 0;">ما فيه مصاريف بعد</div>`;
+
+  renderTxList('txList', [...expenses].sort((a,b)=>b.date-a.date).slice(0,6));
+}
+
+function renderHistory(){
+  const filterRow = document.getElementById('filterRow');
+  const cats = ['الكل', ...Object.keys(CATS)];
+  filterRow.innerHTML = cats.map(c => `<div class="filter-chip ${c===activeFilter?'active':''}" data-cat="${c}">${c==='الكل'?'الكل':CATS[c].icon+' '+c}</div>`).join('');
+  filterRow.querySelectorAll('.filter-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{ activeFilter = chip.dataset.cat; renderHistory(); });
+  });
+  const filtered = activeFilter==='الكل' ? expenses : expenses.filter(e=>e.category===activeFilter);
+  renderTxList('historyList', [...filtered].sort((a,b)=>b.date-a.date));
+}
+
+function renderBudgetInputs(){
+  document.getElementById('budgetInputs').innerHTML = Object.keys(CATS).map(cat => `
+    <div class="confirm-row">
+      <label class="field-label">${CATS[cat].icon} ${cat}</label>
+      <input type="text" inputmode="decimal" class="budget-input" data-cat="${cat}" value="${categoryBudgets[cat].toFixed(3)}">
+    </div>`).join('');
+}
+
+function renderAll(){ renderHome(); renderHistory(); renderBudgetInputs(); }
+
+function extractFromText(text){
+  const amountMatch = text.match(/(\d+\.\d{2,3})\s*ر\.?\s?ع/);
+  const merchantMatch = text.match(/لدى\s+([\u0621-\u064A\s]+?)\s+بتاريخ/);
+  return {
+    amount: amountMatch ? amountMatch[1] : '',
+    merchant: merchantMatch ? merchantMatch[1].trim() : '',
+    amountRaw: amountMatch ? amountMatch[0] : null,
+    merchantRaw: merchantMatch ? merchantMatch[1].trim() : null
+  };
+}
+
+function highlightPreview(text, amountRaw, merchantRaw){
+  let html = text;
+  if(merchantRaw) html = html.replace(merchantRaw, `<mark class="hl">${merchantRaw}</mark>`);
+  if(amountRaw) html = html.replace(amountRaw, `<mark class="hl">${amountRaw}</mark>`);
+  return html;
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1600);
+}
+
+function switchScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===name));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.screen===name));
+  const titles = {home:'الرئيسية', add:'إضافة مصروف', history:'السجل', settings:'الإعدادات'};
+  document.getElementById('pageTitle').textContent = titles[name];
+}
+
+function openEdit(id){
+  const e = expenses.find(x=>x.id===id);
+  if(!e) return;
+  editingId = id;
+  document.getElementById('eAmount').value = e.amount.toFixed(3);
+  document.getElementById('eMerchant').value = e.merchant;
+  document.getElementById('eCategory').value = e.category;
+  document.getElementById('modalBackdrop').classList.add('show');
+  document.getElementById('editSheet').classList.add('show');
+}
+
+function closeEdit(){
+  editingId = null;
+  document.getElementById('modalBackdrop').classList.remove('show');
+  document.getElementById('editSheet').classList.remove('show');
+}
+
+function pad(n){ return n.toString().padStart(2,'0'); }
+
+function exportCSV(){
+  let csv = 'التاريخ,الجهة,الفئة,المبلغ\n';
+  [...expenses].sort((a,b)=>b.date-a.date).forEach(e=>{
+    const d = `${e.date.getFullYear()}-${pad(e.date.getMonth()+1)}-${pad(e.date.getDate())}`;
+    csv += `${d},${e.merchant},${e.category},${e.amount.toFixed(3)}\n`;
+  });
+  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'مصاريفي.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+document.querySelectorAll('.nav-btn').forEach(b=>{
+  b.addEventListener('click', ()=>switchScreen(b.dataset.screen));
 });
 
-const COLORS = {
-  navy: "#0F2942", navyLight: "#1C3F5E", gold: "#C9A227", goldLight: "#E8CE7A",
-  cream: "#FAF7EF", card: "#FFFFFF", border: "#E7E1D0",
-  textPrimary: "#1A1A18", textSecondary: "#6B6459", textMuted: "#9B9484",
-  danger: "#B34537", success: "#3C6E4A",
-};
-const CATEGORY_ICONS = { "بقالة":"🛒","مواصلات":"⛽","سكن":"🏠","ترفيه":"🎬","صحة":"💊","تسوق":"🛍️","فواتير":"🧾","أخرى":"📦" };
-const DEFAULT_CATEGORIES = [
-  { name: "بقالة", limit_amount: 150 }, { name: "مواصلات", limit_amount: 80 },
-  { name: "سكن", limit_amount: 170 }, { name: "ترفيه", limit_amount: 100 },
-  { name: "فواتير", limit_amount: 60 },
-];
-function fmt(n){ return Number(n||0).toLocaleString("ar-OM",{minimumFractionDigits:3,maximumFractionDigits:3}); }
-function todayStr(){ return new Date().toISOString().slice(0,10); }
-function monthKey(d){ return d.slice(0,7); }
+document.getElementById('extractBtn').addEventListener('click', ()=>{
+  const text = document.getElementById('smsInput').value.trim();
+  if(!text) return;
+  const {amount, merchant, amountRaw, merchantRaw} = extractFromText(text);
+  const preview = document.getElementById('msgPreview');
+  preview.innerHTML = highlightPreview(text, amountRaw, merchantRaw);
+  preview.classList.add('show');
+  setTimeout(()=>{
+    document.getElementById('cAmount').value = amount;
+    document.getElementById('cMerchant').value = merchant;
+    document.getElementById('cCategory').value = guessCategory(merchant);
+    document.getElementById('confirmCard').classList.add('show');
+  }, 450);
+});
 
-const inputStyle = { width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${COLORS.border}`, fontSize:13, fontFamily:"inherit", boxSizing:"border-box", background:COLORS.card, color:COLORS.textPrimary };
-const primaryBtnStyle = { width:"100%", padding:"13px 0", borderRadius:12, border:"none", background:COLORS.navy, color:COLORS.goldLight, fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"inherit" };
+document.getElementById('confirmBtn').addEventListener('click', ()=>{
+  const amount = parseFloat(document.getElementById('cAmount').value);
+  if(!amount || amount<=0){ document.getElementById('cAmount').focus(); return; }
+  const merchant = document.getElementById('cMerchant').value.trim() || 'غير معروف';
+  const category = document.getElementById('cCategory').value;
+  expenses.push({id: nextId++, amount, merchant, category, date: new Date()});
+  renderAll();
+  showToast('أُضيفت ✓');
+  document.getElementById('confirmCard').classList.remove('show');
+  document.getElementById('msgPreview').classList.remove('show');
+  document.getElementById('smsInput').value='';
+  switchScreen('home');
+});
 
-function AuthScreen(){
-  const [mode,setMode]=useState("signin");
-  const [email,setEmail]=useState(""); const [password,setPassword]=useState("");
-  const [error,setError]=useState(""); const [info,setInfo]=useState(""); const [loading,setLoading]=useState(false);
+document.getElementById('manualBtn').addEventListener('click', ()=>{
+  const amount = parseFloat(document.getElementById('mAmount').value);
+  if(!amount || amount<=0){ document.getElementById('mAmount').focus(); return; }
+  const merchant = document.getElementById('mMerchant').value.trim() || 'غير معروف';
+  const category = document.getElementById('mCategory').value;
+  expenses.push({id: nextId++, amount, merchant, category, date: new Date()});
+  renderAll();
+  showToast('أُضيفت ✓');
+  document.getElementById('mAmount').value='';
+  document.getElementById('mMerchant').value='';
+  switchScreen('home');
+});
 
-  const submit = async () => {
-    setError(""); setInfo("");
-    if(!email||!password){ setError("عبّي البريد الإلكتروني وكلمة المرور"); return; }
-    setLoading(true);
-    if(mode==="signin"){
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if(error) setError(error.message);
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if(error) setError(error.message);
-      else setInfo("تم إنشاء الحساب. تحقق من بريدك لتأكيد التسجيل ثم سجّل الدخول.");
-    }
-    setLoading(false);
-  };
+document.getElementById('modalBackdrop').addEventListener('click', closeEdit);
 
-  return (
-    <div dir="rtl" style={{maxWidth:420, margin:"40px auto", background:COLORS.cream, borderRadius:20, border:`1px solid ${COLORS.border}`, padding:28, fontFamily:"'Segoe UI',Tahoma,Geneva,Verdana,sans-serif"}}>
-      <h1 style={{color:COLORS.navy, fontSize:22, marginBottom:4}}>مصروفي</h1>
-      <p style={{color:COLORS.textSecondary, fontSize:13, marginBottom:24}}>{mode==="signin"?"سجّل الدخول لمتابعة مصاريفك":"أنشئ حسابك الشخصي"}</p>
-      <div style={{marginBottom:12}}>
-        <p style={{fontSize:12,color:COLORS.textSecondary,marginBottom:6}}>البريد الإلكتروني</p>
-        <input type="email" value={email} onChange={e=>setEmail(e.target.value)} style={inputStyle} placeholder="name@example.com" />
-      </div>
-      <div style={{marginBottom:16}}>
-        <p style={{fontSize:12,color:COLORS.textSecondary,marginBottom:6}}>كلمة المرور</p>
-        <input type="password" value={password} onChange={e=>setPassword(e.target.value)} style={inputStyle} placeholder="••••••••" />
-      </div>
-      {error && <p style={{color:COLORS.danger,fontSize:12,marginBottom:12}}>{error}</p>}
-      {info && <p style={{color:COLORS.success,fontSize:12,marginBottom:12}}>{info}</p>}
-      <button onClick={submit} disabled={loading} style={primaryBtnStyle}>{loading?"جارِ التحقق...":mode==="signin"?"تسجيل الدخول":"إنشاء حساب"}</button>
-      <p style={{textAlign:"center",fontSize:12,marginTop:16,color:COLORS.textSecondary}}>
-        {mode==="signin"?"ما عندك حساب؟ ":"عندك حساب؟ "}
-        <button onClick={()=>setMode(mode==="signin"?"signup":"signin")} style={{background:"none",border:"none",color:COLORS.gold,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-          {mode==="signin"?"أنشئ حساب جديد":"سجّل الدخول"}
-        </button>
-      </p>
-      <p style={{textAlign:"center",fontSize:11,marginTop:8,color:COLORS.textMuted}}>بمجرد الدخول، هذا الجهاز يبقى مسجّلًا تلقائيًا في المرات القادمة.</p>
-    </div>
-  );
-}
+document.getElementById('saveEditBtn').addEventListener('click', ()=>{
+  const amount = parseFloat(document.getElementById('eAmount').value);
+  if(!amount || amount<=0) return;
+  const e = expenses.find(x=>x.id===editingId);
+  if(!e) return;
+  e.amount = amount;
+  e.merchant = document.getElementById('eMerchant').value.trim() || 'غير معروف';
+  e.category = document.getElementById('eCategory').value;
+  closeEdit();
+  renderAll();
+  showToast('تم التعديل ✓');
+});
 
-function Screen({children}){ return <div style={{display:"flex",flexDirection:"column",minHeight:"100%",padding:"16px 16px 90px"}}>{children}</div>; }
-function TopBar({title}){ return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}><h1 style={{fontSize:20,fontWeight:700,color:COLORS.navy,margin:0}}>{title}</h1></div>; }
-function BottomNav({screen,setScreen}){
-  const items=[{id:"home",icon:"🏠",label:"الرئيسية"},{id:"reports",icon:"📊",label:"التقارير"},{id:"add",icon:"➕",label:"إضافة"},{id:"budget",icon:"🎯",label:"الميزانية"},{id:"settings",icon:"⚙️",label:"الإعدادات"}];
-  return (
-    <div style={{position:"fixed",bottom:0,left:0,right:0,maxWidth:480,margin:"0 auto",background:COLORS.card,borderTop:`1px solid ${COLORS.border}`,display:"flex",justifyContent:"space-around",padding:"10px 4px 14px"}}>
-      {items.map(it=>(
-        <button key={it.id} onClick={()=>setScreen(it.id)} style={{background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",color:screen===it.id?COLORS.gold:COLORS.textMuted,fontFamily:"inherit"}}>
-          <span style={{fontSize:it.id==="add"?26:20}}>{it.icon}</span>
-          <span style={{fontSize:10,fontWeight:screen===it.id?700:400}}>{it.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-function Card({children,style}){ return <div style={{background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:14,padding:16,...style}}>{children}</div>; }
+document.getElementById('deleteBtn').addEventListener('click', ()=>{
+  expenses = expenses.filter(x=>x.id!==editingId);
+  closeEdit();
+  renderAll();
+  showToast('حُذف ✓');
+});
 
-function HomeScreen({transactions,monthTotals}){
-  const recent=useMemo(()=>[...transactions].sort((a,b)=>a.date<b.date?1:-1).slice(0,5),[transactions]);
-  return (
-    <Screen>
-      <TopBar title="مرحبًا 👋" />
-      <div style={{background:`linear-gradient(135deg, ${COLORS.navy}, ${COLORS.navyLight})`,borderRadius:16,padding:20,color:COLORS.cream,marginBottom:16}}>
-        <p style={{fontSize:12,opacity:0.8,margin:0}}>الرصيد المتبقي هذا الشهر</p>
-        <p style={{fontSize:28,fontWeight:700,margin:"4px 0 14px",color:COLORS.goldLight}}>{fmt(monthTotals.income-monthTotals.expense)} ر.ع</p>
-        <div style={{display:"flex",gap:10}}>
-          <div style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"8px 12px"}}><p style={{fontSize:11,margin:0,opacity:0.75}}>المصروف</p><p style={{fontSize:15,fontWeight:700,margin:"2px 0 0"}}>{fmt(monthTotals.expense)}</p></div>
-          <div style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"8px 12px"}}><p style={{fontSize:11,margin:0,opacity:0.75}}>الدخل</p><p style={{fontSize:15,fontWeight:700,margin:"2px 0 0"}}>{fmt(monthTotals.income)}</p></div>
-        </div>
-      </div>
-      <p style={{fontSize:13,fontWeight:700,color:COLORS.textSecondary,margin:"4px 0 10px"}}>آخر العمليات</p>
-      <Card>
-        {recent.length===0 && <p style={{fontSize:13,color:COLORS.textMuted,textAlign:"center",padding:"10px 0"}}>لا توجد عمليات بعد. أضف أول مصروف من زر + في الأسفل.</p>}
-        {recent.map((t,i)=>(
-          <div key={t.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderBottom:i<recent.length-1?`1px solid ${COLORS.border}`:"none"}}>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:18}}>{t.type==="income"?"💰":CATEGORY_ICONS[t.category]||"📦"}</span>
-              <div><p style={{fontSize:13,margin:0,fontWeight:500}}>{t.category}</p>{t.note && <p style={{fontSize:11,margin:0,color:COLORS.textMuted}}>{t.note}</p>}</div>
-            </div>
-            <span style={{fontSize:13,fontWeight:700,color:t.type==="income"?COLORS.success:COLORS.danger}}>{t.type==="income"?"+":"-"}{fmt(t.amount)}</span>
-          </div>
-        ))}
-      </Card>
-    </Screen>
-  );
-}
+document.getElementById('saveBudgetsBtn').addEventListener('click', ()=>{
+  document.querySelectorAll('.budget-input').forEach(inp=>{
+    const val = parseFloat(inp.value);
+    if(!isNaN(val) && val>=0) categoryBudgets[inp.dataset.cat] = val;
+  });
+  renderAll();
+  showToast('تم حفظ الميزانيات ✓');
+});
 
-function AddScreen({categories,onAdd,setScreen}){
-  const [type,setType]=useState("expense"); const [amount,setAmount]=useState("");
-  const [category,setCategory]=useState(categories[0]?.name||"أخرى"); const [note,setNote]=useState("");
-  const [date,setDate]=useState(todayStr()); const [saving,setSaving]=useState(false);
-  const submit=async()=>{
-    const value=parseFloat(amount); if(!value||value<=0) return;
-    setSaving(true);
-    await onAdd({type,amount:value,category:type==="income"?"دخل":category,note,date});
-    setSaving(false); setAmount(""); setNote(""); setScreen("home");
-  };
-  return (
-    <Screen>
-      <TopBar title="عملية جديدة" />
-      <div style={{display:"flex",gap:8,marginBottom:18}}>
-        {[{id:"expense",label:"مصروف"},{id:"income",label:"دخل"}].map(t=>(
-          <button key={t.id} onClick={()=>setType(t.id)} style={{flex:1,padding:"10px 0",borderRadius:10,border:`1px solid ${type===t.id?COLORS.navy:COLORS.border}`,background:type===t.id?COLORS.navy:COLORS.card,color:type===t.id?COLORS.goldLight:COLORS.textSecondary,fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>{t.label}</button>
-        ))}
-      </div>
-      <Card style={{textAlign:"center",marginBottom:16}}>
-        <p style={{fontSize:12,color:COLORS.textMuted,margin:"0 0 6px"}}>المبلغ (ر.ع)</p>
-        <input type="number" inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.000" style={{width:"100%",border:"none",outline:"none",fontSize:32,fontWeight:700,textAlign:"center",color:COLORS.navy,fontFamily:"inherit"}} />
-      </Card>
-      {type==="expense" && (
-        <div style={{marginBottom:16}}>
-          <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:700}}>الفئة</p>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
-            {categories.map(c=>(
-              <button key={c.id} onClick={()=>setCategory(c.name)} style={{padding:"10px 4px",borderRadius:10,border:`1px solid ${category===c.name?COLORS.gold:COLORS.border}`,background:category===c.name?"#FBF4DE":COLORS.card,cursor:"pointer",fontFamily:"inherit"}}>
-                <div style={{fontSize:18}}>{CATEGORY_ICONS[c.name]||"📦"}</div>
-                <div style={{fontSize:10,marginTop:4,color:COLORS.textSecondary}}>{c.name}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-      <div style={{marginBottom:12}}>
-        <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 6px",fontWeight:700}}>ملاحظة (اختياري)</p>
-        <input type="text" value={note} onChange={e=>setNote(e.target.value)} placeholder="مثال: تسوق الأسبوع" style={inputStyle} />
-      </div>
-      <div style={{marginBottom:20}}>
-        <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 6px",fontWeight:700}}>التاريخ</p>
-        <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={inputStyle} />
-      </div>
-      <button onClick={submit} disabled={saving} style={primaryBtnStyle}>{saving?"جارِ الحفظ...":"حفظ العملية"}</button>
-    </Screen>
-  );
-}
+document.getElementById('exportBtn').addEventListener('click', exportCSV);
 
-function ReportsScreen({categoryTotals,monthTotals}){
-  const total=monthTotals.expense||1;
-  const palette=[COLORS.navy,COLORS.gold,"#3C6E4A","#8A5A3C","#6B6459","#B34537"];
-  let cumulative=0;
-  const arcs=categoryTotals.map((c,i)=>{ const pct=(c.total/total)*100; const arc={...c,pct,offset:cumulative,color:palette[i%palette.length]}; cumulative+=pct; return arc; });
-  const circumference=2*Math.PI*15.5;
-  return (
-    <Screen>
-      <TopBar title="التقارير" />
-      <Card style={{marginBottom:16}}>
-        <p style={{fontSize:13,fontWeight:700,margin:"0 0 12px"}}>توزيع المصاريف هذا الشهر</p>
-        {categoryTotals.length===0 ? <p style={{fontSize:13,color:COLORS.textMuted,textAlign:"center",padding:"20px 0"}}>لا توجد مصاريف مسجلة هذا الشهر بعد.</p> : (
-          <>
-            <div style={{display:"flex",justifyContent:"center",padding:"8px 0 16px"}}>
-              <svg width="140" height="140" viewBox="0 0 36 36">
-                <circle cx="18" cy="18" r="15.5" fill="none" stroke={COLORS.border} strokeWidth="4" />
-                {arcs.map(a=>(
-                  <circle key={a.name} cx="18" cy="18" r="15.5" fill="none" stroke={a.color} strokeWidth="4"
-                    strokeDasharray={`${(a.pct/100)*circumference} ${circumference}`}
-                    strokeDashoffset={-(a.offset/100)*circumference} strokeLinecap="round" transform="rotate(-90 18 18)" />
-                ))}
-              </svg>
-            </div>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {arcs.map(a=>(
-                <div key={a.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{width:8,height:8,borderRadius:4,background:a.color,display:"inline-block"}} /><span style={{fontSize:12}}>{a.name}</span></div>
-                  <span style={{fontSize:12,color:COLORS.textSecondary}}>{fmt(a.total)} ر.ع · {Math.round(a.pct)}%</span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </Card>
-    </Screen>
-  );
-}
-
-function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory,onAddCategory}){
-  const [editing,setEditing]=useState(null); const [newCatName,setNewCatName]=useState(""); const [newCatLimit,setNewCatLimit]=useState("");
-  const totalLimit=categories.reduce((s,c)=>s+Number(c.limit_amount||0),0);
-  const totalSpent=categoryTotals.reduce((s,c)=>s+c.total,0);
-  const getSpent=name=>categoryTotals.find(c=>c.name===name)?.total||0;
-  return (
-    <Screen>
-      <TopBar title="الميزانية الشهرية" />
-      <Card style={{marginBottom:16}}>
-        <p style={{fontSize:12,color:COLORS.textMuted,margin:0}}>إجمالي الميزانية</p>
-        <p style={{fontSize:22,fontWeight:700,margin:"4px 0 8px",color:COLORS.navy}}>{fmt(totalLimit)} ر.ع</p>
-        <div style={{height:8,background:COLORS.border,borderRadius:4,overflow:"hidden"}}><div style={{width:`${Math.min(100,(totalSpent/(totalLimit||1))*100)}%`,height:"100%",background:totalSpent>totalLimit?COLORS.danger:COLORS.gold}} /></div>
-        <p style={{fontSize:11,color:COLORS.textSecondary,margin:"6px 0 0"}}>تم صرف {fmt(totalSpent)} من {fmt(totalLimit)}</p>
-      </Card>
-      <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:16}}>
-        {categories.map(c=>{
-          const spent=getSpent(c.name); const pct=Math.min(100,(spent/(c.limit_amount||1))*100); const over=spent>c.limit_amount; const isEditing=editing===c.id;
-          return (
-            <Card key={c.id}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <div style={{display:"flex",alignItems:"center",gap:8}}><span>{CATEGORY_ICONS[c.name]||"📦"}</span><span style={{fontSize:13,fontWeight:600}}>{c.name}</span></div>
-                <button onClick={()=>setEditing(isEditing?null:c.id)} style={{background:"none",border:"none",fontSize:12,color:COLORS.textMuted,cursor:"pointer",fontFamily:"inherit"}}>{isEditing?"إغلاق":"تعديل"}</button>
-              </div>
-              <div style={{height:6,background:COLORS.border,borderRadius:3,overflow:"hidden"}}><div style={{width:`${pct}%`,height:"100%",background:over?COLORS.danger:COLORS.success}} /></div>
-              <p style={{fontSize:11,color:over?COLORS.danger:COLORS.textSecondary,margin:"6px 0 0"}}>{fmt(spent)} / {fmt(c.limit_amount)} ر.ع {over?"— تجاوزت الميزانية":""}</p>
-              {isEditing && (
-                <div style={{marginTop:12,paddingTop:12,borderTop:`1px solid ${COLORS.border}`}}>
-                  <input type="number" defaultValue={c.limit_amount} onBlur={e=>onSaveCategory(c.id,{limit_amount:parseFloat(e.target.value)||0})} style={{...inputStyle,marginBottom:8}} />
-                  <button onClick={()=>{onDeleteCategory(c.id); setEditing(null);}} style={{...inputStyle,background:"#FBEAE7",color:COLORS.danger,border:"none",cursor:"pointer",textAlign:"center",fontWeight:700}}>حذف الفئة</button>
-                </div>
-              )}
-            </Card>
-          );
-        })}
-      </div>
-      <Card>
-        <p style={{fontSize:13,fontWeight:700,margin:"0 0 10px"}}>إضافة فئة جديدة</p>
-        <input type="text" placeholder="اسم الفئة" value={newCatName} onChange={e=>setNewCatName(e.target.value)} style={{...inputStyle,marginBottom:8}} />
-        <input type="number" placeholder="سقف الميزانية (ر.ع)" value={newCatLimit} onChange={e=>setNewCatLimit(e.target.value)} style={{...inputStyle,marginBottom:8}} />
-        <button onClick={()=>{ if(!newCatName.trim()) return; onAddCategory({name:newCatName.trim(),limit_amount:parseFloat(newCatLimit)||0}); setNewCatName(""); setNewCatLimit(""); }} style={primaryBtnStyle}>إضافة الفئة</button>
-      </Card>
-    </Screen>
-  );
-}
-
-function SettingsScreen({transactions,categories,userEmail,onSignOut}){
-  const exportData=()=>{
-    const blob=new Blob([JSON.stringify({transactions,categories},null,2)],{type:"application/json"});
-    const url=URL.createObjectURL(blob); const a=document.createElement("a");
-    a.href=url; a.download="بياناتي-المالية.json"; a.click(); URL.revokeObjectURL(url);
-  };
-  return (
-    <Screen>
-      <TopBar title="الإعدادات" />
-      <Card style={{marginBottom:16}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,paddingBottom:12,borderBottom:`1px solid ${COLORS.border}`,marginBottom:12}}>
-          <div style={{width:42,height:42,borderRadius:"50%",background:COLORS.navy,color:COLORS.goldLight,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14}}>{userEmail?userEmail[0].toUpperCase():"?"}</div>
-          <div><p style={{fontSize:14,fontWeight:700,margin:0}}>{userEmail}</p><p style={{fontSize:11,color:COLORS.textMuted,margin:0}}>حساب شخصي · Supabase</p></div>
-        </div>
-        <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0"}}><span style={{fontSize:13,color:COLORS.textSecondary}}>العملة</span><span style={{fontSize:12,color:COLORS.textMuted}}>ر.ع — ريال عماني</span></div>
-        <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0"}}><span style={{fontSize:13,color:COLORS.textSecondary}}>عدد الفئات</span><span style={{fontSize:12,color:COLORS.textMuted}}>{categories.length} فئة</span></div>
-        <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0"}}><span style={{fontSize:13,color:COLORS.textSecondary}}>عدد العمليات</span><span style={{fontSize:12,color:COLORS.textMuted}}>{transactions.length}</span></div>
-      </Card>
-      <button onClick={exportData} style={{...primaryBtnStyle,background:COLORS.card,color:COLORS.navy,border:`1px solid ${COLORS.border}`,marginBottom:10}}>تصدير بياناتي (JSON)</button>
-      <button onClick={onSignOut} style={{...primaryBtnStyle,background:"#FBEAE7",color:COLORS.danger,border:"none"}}>تسجيل الخروج</button>
-    </Screen>
-  );
-}
-
-function App(){
-  const [session,setSession]=useState(null);
-  const [checkingSession,setCheckingSession]=useState(true);
-  const [screen,setScreen]=useState("home");
-  const [transactions,setTransactions]=useState([]);
-  const [categories,setCategories]=useState([]);
-  const [dataLoaded,setDataLoaded]=useState(false);
-  const [configError,setConfigError]=useState(false);
-
-  useEffect(()=>{
-    if(!window.SUPABASE_URL || window.SUPABASE_URL.includes("ضع-هنا") || !window.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY.includes("ضع-هنا")){
-      setConfigError(true); setCheckingSession(false); return;
-    }
-    supabase.auth.getSession().then(({data})=>{ setSession(data.session); setCheckingSession(false); });
-    const {data:listener}=supabase.auth.onAuthStateChange((_e,newSession)=>setSession(newSession));
-    return ()=>listener.subscription.unsubscribe();
-  },[]);
-
-  const userId=session?.user?.id;
-
-  useEffect(()=>{
-    if(!userId) return;
-    (async()=>{
-      const {data:cats}=await supabase.from("categories").select("*").order("created_at");
-      if(cats && cats.length>0){ setCategories(cats); }
-      else {
-        const seeded=DEFAULT_CATEGORIES.map(c=>({...c,user_id:userId}));
-        const {data:inserted}=await supabase.from("categories").insert(seeded).select();
-        setCategories(inserted||[]);
-      }
-      const {data:txs}=await supabase.from("transactions").select("*").order("date",{ascending:false});
-      setTransactions(txs||[]); setDataLoaded(true);
-    })();
-  },[userId]);
-
-  const addTransaction=useCallback(async t=>{
-    const {data,error}=await supabase.from("transactions").insert({...t,user_id:userId}).select();
-    if(!error && data) setTransactions(prev=>[data[0],...prev]);
-  },[userId]);
-  const saveCategory=useCallback(async(id,patch)=>{
-    await supabase.from("categories").update(patch).eq("id",id);
-    setCategories(prev=>prev.map(c=>c.id===id?{...c,...patch}:c));
-  },[]);
-  const deleteCategory=useCallback(async id=>{
-    await supabase.from("categories").delete().eq("id",id);
-    setCategories(prev=>prev.filter(c=>c.id!==id));
-  },[]);
-  const addCategory=useCallback(async c=>{
-    const {data}=await supabase.from("categories").insert({...c,user_id:userId}).select();
-    if(data) setCategories(prev=>[...prev,data[0]]);
-  },[userId]);
-  const signOut=useCallback(async()=>{
-    await supabase.auth.signOut(); setTransactions([]); setCategories([]); setDataLoaded(false); setScreen("home");
-  },[]);
-
-  const thisMonth=monthKey(todayStr());
-  const monthTotals=useMemo(()=>transactions.filter(t=>monthKey(t.date)===thisMonth).reduce((acc,t)=>{ if(t.type==="income") acc.income+=Number(t.amount); else acc.expense+=Number(t.amount); return acc; },{income:0,expense:0}),[transactions,thisMonth]);
-  const categoryTotals=useMemo(()=>{
-    const map={};
-    transactions.filter(t=>t.type==="expense" && monthKey(t.date)===thisMonth).forEach(t=>{ map[t.category]=(map[t.category]||0)+Number(t.amount); });
-    return Object.entries(map).map(([name,total])=>({name,total})).sort((a,b)=>b.total-a.total);
-  },[transactions,thisMonth]);
-
-  if(configError){
-    return (
-      <div dir="rtl" style={{maxWidth:420,margin:"60px auto",padding:24,fontFamily:"sans-serif",background:"#FBEAE7",borderRadius:12,color:COLORS.danger}}>
-        <b>لم يتم إعداد الاتصال بعد.</b><br/>افتح ملف HTML بمحرر نصوص وعبّي SUPABASE_URL و SUPABASE_ANON_KEY في أعلى الملف.
-      </div>
-    );
-  }
-  if(checkingSession) return <div style={{textAlign:"center",padding:60,color:COLORS.textMuted}}>جارِ التحقق من الجلسة...</div>;
-  if(!session) return <AuthScreen />;
-  if(!dataLoaded) return <div style={{textAlign:"center",padding:60,color:COLORS.textMuted}}>جارِ تحميل بياناتك...</div>;
-
-  return (
-    <div dir="rtl" style={{maxWidth:480,margin:"0 auto",background:COLORS.cream,minHeight:"100vh",fontFamily:"'Segoe UI',Tahoma,Geneva,Verdana,sans-serif",color:COLORS.textPrimary,position:"relative"}}>
-      {screen==="home" && <HomeScreen transactions={transactions} monthTotals={monthTotals} />}
-      {screen==="add" && <AddScreen categories={categories} onAdd={addTransaction} setScreen={setScreen} />}
-      {screen==="reports" && <ReportsScreen categoryTotals={categoryTotals} monthTotals={monthTotals} />}
-      {screen==="budget" && <BudgetScreen categories={categories} categoryTotals={categoryTotals} onSaveCategory={saveCategory} onDeleteCategory={deleteCategory} onAddCategory={addCategory} />}
-      {screen==="settings" && <SettingsScreen transactions={transactions} categories={categories} userEmail={session.user.email} onSignOut={signOut} />}
-      <BottomNav screen={screen} setScreen={setScreen} />
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+populateSelects();
+renderAll();
 </script>
 </body>
 </html>
