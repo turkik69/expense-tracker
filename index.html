@@ -1,58 +1,387 @@
 <!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Expense Tracker</title>
-  </head>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>مصروفي</title>
+</head>
+<body style="margin:0;">
+<div id="root"></div>
 
-  <body>
-    <input id="email" placeholder="Email" />
-    <button id="send-otp">Send OTP</button>
+<!-- ============================================
+     الخطوة 1: عبّي بيانات مشروع Supabase هنا
+     (Project Settings → API في لوحة Supabase)
+============================================ -->
+<script>
+  window.SUPABASE_URL = "ضع-هنا-Project-URL";
+  window.SUPABASE_ANON_KEY = "ضع-هنا-anon-public-key";
+</script>
 
-    <div id="status"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <script type="module">
-      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useCallback } = React;
+const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true },
+});
 
-      const SUPABASE_URL = "SUPABASE_URL";
-      const SUPABASE_ANON_KEY = "SUPABASE_ANON_KEY";
+const COLORS = {
+  navy: "#0F2942", navyLight: "#1C3F5E", gold: "#C9A227", goldLight: "#E8CE7A",
+  cream: "#FAF7EF", card: "#FFFFFF", border: "#E7E1D0",
+  textPrimary: "#1A1A18", textSecondary: "#6B6459", textMuted: "#9B9484",
+  danger: "#B34537", success: "#3C6E4A",
+};
+const CATEGORY_ICONS = { "بقالة":"🛒","مواصلات":"⛽","سكن":"🏠","ترفيه":"🎬","صحة":"💊","تسوق":"🛍️","فواتير":"🧾","أخرى":"📦" };
+const DEFAULT_CATEGORIES = [
+  { name: "بقالة", limit_amount: 150 }, { name: "مواصلات", limit_amount: 80 },
+  { name: "سكن", limit_amount: 170 }, { name: "ترفيه", limit_amount: 100 },
+  { name: "فواتير", limit_amount: 60 },
+];
+function fmt(n){ return Number(n||0).toLocaleString("ar-OM",{minimumFractionDigits:3,maximumFractionDigits:3}); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function monthKey(d){ return d.slice(0,7); }
 
-      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const inputStyle = { width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${COLORS.border}`, fontSize:13, fontFamily:"inherit", boxSizing:"border-box", background:COLORS.card, color:COLORS.textPrimary };
+const primaryBtnStyle = { width:"100%", padding:"13px 0", borderRadius:12, border:"none", background:COLORS.navy, color:COLORS.goldLight, fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"inherit" };
 
-      const statusEl = document.getElementById("status");
-      const emailEl = document.getElementById("email");
+function AuthScreen(){
+  const [mode,setMode]=useState("signin");
+  const [email,setEmail]=useState(""); const [password,setPassword]=useState("");
+  const [error,setError]=useState(""); const [info,setInfo]=useState(""); const [loading,setLoading]=useState(false);
 
-      document.getElementById("send-otp").addEventListener("click", async () => {
-        const email = emailEl.value.trim();
-        if (!email) return;
+  const submit = async () => {
+    setError(""); setInfo("");
+    if(!email||!password){ setError("عبّي البريد الإلكتروني وكلمة المرور"); return; }
+    setLoading(true);
+    if(mode==="signin"){
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if(error) setError(error.message);
+    } else {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if(error) setError(error.message);
+      else setInfo("تم إنشاء الحساب. تحقق من بريدك لتأكيد التسجيل ثم سجّل الدخول.");
+    }
+    setLoading(false);
+  };
 
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            emailRedirectTo: "https://turkik69.github.io/expense-tracker/",
-          },
-        });
+  return (
+    <div dir="rtl" style={{maxWidth:420, margin:"40px auto", background:COLORS.cream, borderRadius:20, border:`1px solid ${COLORS.border}`, padding:28, fontFamily:"'Segoe UI',Tahoma,Geneva,Verdana,sans-serif"}}>
+      <h1 style={{color:COLORS.navy, fontSize:22, marginBottom:4}}>مصروفي</h1>
+      <p style={{color:COLORS.textSecondary, fontSize:13, marginBottom:24}}>{mode==="signin"?"سجّل الدخول لمتابعة مصاريفك":"أنشئ حسابك الشخصي"}</p>
+      <div style={{marginBottom:12}}>
+        <p style={{fontSize:12,color:COLORS.textSecondary,marginBottom:6}}>البريد الإلكتروني</p>
+        <input type="email" value={email} onChange={e=>setEmail(e.target.value)} style={inputStyle} placeholder="name@example.com" />
+      </div>
+      <div style={{marginBottom:16}}>
+        <p style={{fontSize:12,color:COLORS.textSecondary,marginBottom:6}}>كلمة المرور</p>
+        <input type="password" value={password} onChange={e=>setPassword(e.target.value)} style={inputStyle} placeholder="••••••••" />
+      </div>
+      {error && <p style={{color:COLORS.danger,fontSize:12,marginBottom:12}}>{error}</p>}
+      {info && <p style={{color:COLORS.success,fontSize:12,marginBottom:12}}>{info}</p>}
+      <button onClick={submit} disabled={loading} style={primaryBtnStyle}>{loading?"جارِ التحقق...":mode==="signin"?"تسجيل الدخول":"إنشاء حساب"}</button>
+      <p style={{textAlign:"center",fontSize:12,marginTop:16,color:COLORS.textSecondary}}>
+        {mode==="signin"?"ما عندك حساب؟ ":"عندك حساب؟ "}
+        <button onClick={()=>setMode(mode==="signin"?"signup":"signin")} style={{background:"none",border:"none",color:COLORS.gold,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+          {mode==="signin"?"أنشئ حساب جديد":"سجّل الدخول"}
+        </button>
+      </p>
+      <p style={{textAlign:"center",fontSize:11,marginTop:8,color:COLORS.textMuted}}>بمجرد الدخول، هذا الجهاز يبقى مسجّلًا تلقائيًا في المرات القادمة.</p>
+    </div>
+  );
+}
 
-        if (error) statusEl.textContent = "Error: " + error.message;
-        else statusEl.textContent = "تم إرسال رابط/OTP على بريدك.";
-      });
+function Screen({children}){ return <div style={{display:"flex",flexDirection:"column",minHeight:"100%",padding:"16px 16px 90px"}}>{children}</div>; }
+function TopBar({title}){ return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}><h1 style={{fontSize:20,fontWeight:700,color:COLORS.navy,margin:0}}>{title}</h1></div>; }
+function BottomNav({screen,setScreen}){
+  const items=[{id:"home",icon:"🏠",label:"الرئيسية"},{id:"reports",icon:"📊",label:"التقارير"},{id:"add",icon:"➕",label:"إضافة"},{id:"budget",icon:"🎯",label:"الميزانية"},{id:"settings",icon:"⚙️",label:"الإعدادات"}];
+  return (
+    <div style={{position:"fixed",bottom:0,left:0,right:0,maxWidth:480,margin:"0 auto",background:COLORS.card,borderTop:`1px solid ${COLORS.border}`,display:"flex",justifyContent:"space-around",padding:"10px 4px 14px"}}>
+      {items.map(it=>(
+        <button key={it.id} onClick={()=>setScreen(it.id)} style={{background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:2,cursor:"pointer",color:screen===it.id?COLORS.gold:COLORS.textMuted,fontFamily:"inherit"}}>
+          <span style={{fontSize:it.id==="add"?26:20}}>{it.icon}</span>
+          <span style={{fontSize:10,fontWeight:screen===it.id?700:400}}>{it.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+function Card({children,style}){ return <div style={{background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:14,padding:16,...style}}>{children}</div>; }
 
-      async function refreshUI() {
-        const { data } = await supabase.auth.getSession();
-        const session = data.session;
+function HomeScreen({transactions,monthTotals}){
+  const recent=useMemo(()=>[...transactions].sort((a,b)=>a.date<b.date?1:-1).slice(0,5),[transactions]);
+  return (
+    <Screen>
+      <TopBar title="مرحبًا 👋" />
+      <div style={{background:`linear-gradient(135deg, ${COLORS.navy}, ${COLORS.navyLight})`,borderRadius:16,padding:20,color:COLORS.cream,marginBottom:16}}>
+        <p style={{fontSize:12,opacity:0.8,margin:0}}>الرصيد المتبقي هذا الشهر</p>
+        <p style={{fontSize:28,fontWeight:700,margin:"4px 0 14px",color:COLORS.goldLight}}>{fmt(monthTotals.income-monthTotals.expense)} ر.ع</p>
+        <div style={{display:"flex",gap:10}}>
+          <div style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"8px 12px"}}><p style={{fontSize:11,margin:0,opacity:0.75}}>المصروف</p><p style={{fontSize:15,fontWeight:700,margin:"2px 0 0"}}>{fmt(monthTotals.expense)}</p></div>
+          <div style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"8px 12px"}}><p style={{fontSize:11,margin:0,opacity:0.75}}>الدخل</p><p style={{fontSize:15,fontWeight:700,margin:"2px 0 0"}}>{fmt(monthTotals.income)}</p></div>
+        </div>
+      </div>
+      <p style={{fontSize:13,fontWeight:700,color:COLORS.textSecondary,margin:"4px 0 10px"}}>آخر العمليات</p>
+      <Card>
+        {recent.length===0 && <p style={{fontSize:13,color:COLORS.textMuted,textAlign:"center",padding:"10px 0"}}>لا توجد عمليات بعد. أضف أول مصروف من زر + في الأسفل.</p>}
+        {recent.map((t,i)=>(
+          <div key={t.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderBottom:i<recent.length-1?`1px solid ${COLORS.border}`:"none"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:18}}>{t.type==="income"?"💰":CATEGORY_ICONS[t.category]||"📦"}</span>
+              <div><p style={{fontSize:13,margin:0,fontWeight:500}}>{t.category}</p>{t.note && <p style={{fontSize:11,margin:0,color:COLORS.textMuted}}>{t.note}</p>}</div>
+            </div>
+            <span style={{fontSize:13,fontWeight:700,color:t.type==="income"?COLORS.success:COLORS.danger}}>{t.type==="income"?"+":"-"}{fmt(t.amount)}</span>
+          </div>
+        ))}
+      </Card>
+    </Screen>
+  );
+}
 
-        if (session) {
-          statusEl.textContent = "✅ Logged in: " + session.user.email;
-        } else {
-          statusEl.textContent = "❌ Not logged in";
-        }
+function AddScreen({categories,onAdd,setScreen}){
+  const [type,setType]=useState("expense"); const [amount,setAmount]=useState("");
+  const [category,setCategory]=useState(categories[0]?.name||"أخرى"); const [note,setNote]=useState("");
+  const [date,setDate]=useState(todayStr()); const [saving,setSaving]=useState(false);
+  const submit=async()=>{
+    const value=parseFloat(amount); if(!value||value<=0) return;
+    setSaving(true);
+    await onAdd({type,amount:value,category:type==="income"?"دخل":category,note,date});
+    setSaving(false); setAmount(""); setNote(""); setScreen("home");
+  };
+  return (
+    <Screen>
+      <TopBar title="عملية جديدة" />
+      <div style={{display:"flex",gap:8,marginBottom:18}}>
+        {[{id:"expense",label:"مصروف"},{id:"income",label:"دخل"}].map(t=>(
+          <button key={t.id} onClick={()=>setType(t.id)} style={{flex:1,padding:"10px 0",borderRadius:10,border:`1px solid ${type===t.id?COLORS.navy:COLORS.border}`,background:type===t.id?COLORS.navy:COLORS.card,color:type===t.id?COLORS.goldLight:COLORS.textSecondary,fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>{t.label}</button>
+        ))}
+      </div>
+      <Card style={{textAlign:"center",marginBottom:16}}>
+        <p style={{fontSize:12,color:COLORS.textMuted,margin:"0 0 6px"}}>المبلغ (ر.ع)</p>
+        <input type="number" inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.000" style={{width:"100%",border:"none",outline:"none",fontSize:32,fontWeight:700,textAlign:"center",color:COLORS.navy,fontFamily:"inherit"}} />
+      </Card>
+      {type==="expense" && (
+        <div style={{marginBottom:16}}>
+          <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:700}}>الفئة</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+            {categories.map(c=>(
+              <button key={c.id} onClick={()=>setCategory(c.name)} style={{padding:"10px 4px",borderRadius:10,border:`1px solid ${category===c.name?COLORS.gold:COLORS.border}`,background:category===c.name?"#FBF4DE":COLORS.card,cursor:"pointer",fontFamily:"inherit"}}>
+                <div style={{fontSize:18}}>{CATEGORY_ICONS[c.name]||"📦"}</div>
+                <div style={{fontSize:10,marginTop:4,color:COLORS.textSecondary}}>{c.name}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div style={{marginBottom:12}}>
+        <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 6px",fontWeight:700}}>ملاحظة (اختياري)</p>
+        <input type="text" value={note} onChange={e=>setNote(e.target.value)} placeholder="مثال: تسوق الأسبوع" style={inputStyle} />
+      </div>
+      <div style={{marginBottom:20}}>
+        <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 6px",fontWeight:700}}>التاريخ</p>
+        <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={inputStyle} />
+      </div>
+      <button onClick={submit} disabled={saving} style={primaryBtnStyle}>{saving?"جارِ الحفظ...":"حفظ العملية"}</button>
+    </Screen>
+  );
+}
+
+function ReportsScreen({categoryTotals,monthTotals}){
+  const total=monthTotals.expense||1;
+  const palette=[COLORS.navy,COLORS.gold,"#3C6E4A","#8A5A3C","#6B6459","#B34537"];
+  let cumulative=0;
+  const arcs=categoryTotals.map((c,i)=>{ const pct=(c.total/total)*100; const arc={...c,pct,offset:cumulative,color:palette[i%palette.length]}; cumulative+=pct; return arc; });
+  const circumference=2*Math.PI*15.5;
+  return (
+    <Screen>
+      <TopBar title="التقارير" />
+      <Card style={{marginBottom:16}}>
+        <p style={{fontSize:13,fontWeight:700,margin:"0 0 12px"}}>توزيع المصاريف هذا الشهر</p>
+        {categoryTotals.length===0 ? <p style={{fontSize:13,color:COLORS.textMuted,textAlign:"center",padding:"20px 0"}}>لا توجد مصاريف مسجلة هذا الشهر بعد.</p> : (
+          <>
+            <div style={{display:"flex",justifyContent:"center",padding:"8px 0 16px"}}>
+              <svg width="140" height="140" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke={COLORS.border} strokeWidth="4" />
+                {arcs.map(a=>(
+                  <circle key={a.name} cx="18" cy="18" r="15.5" fill="none" stroke={a.color} strokeWidth="4"
+                    strokeDasharray={`${(a.pct/100)*circumference} ${circumference}`}
+                    strokeDashoffset={-(a.offset/100)*circumference} strokeLinecap="round" transform="rotate(-90 18 18)" />
+                ))}
+              </svg>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {arcs.map(a=>(
+                <div key={a.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{width:8,height:8,borderRadius:4,background:a.color,display:"inline-block"}} /><span style={{fontSize:12}}>{a.name}</span></div>
+                  <span style={{fontSize:12,color:COLORS.textSecondary}}>{fmt(a.total)} ر.ع · {Math.round(a.pct)}%</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </Card>
+    </Screen>
+  );
+}
+
+function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory,onAddCategory}){
+  const [editing,setEditing]=useState(null); const [newCatName,setNewCatName]=useState(""); const [newCatLimit,setNewCatLimit]=useState("");
+  const totalLimit=categories.reduce((s,c)=>s+Number(c.limit_amount||0),0);
+  const totalSpent=categoryTotals.reduce((s,c)=>s+c.total,0);
+  const getSpent=name=>categoryTotals.find(c=>c.name===name)?.total||0;
+  return (
+    <Screen>
+      <TopBar title="الميزانية الشهرية" />
+      <Card style={{marginBottom:16}}>
+        <p style={{fontSize:12,color:COLORS.textMuted,margin:0}}>إجمالي الميزانية</p>
+        <p style={{fontSize:22,fontWeight:700,margin:"4px 0 8px",color:COLORS.navy}}>{fmt(totalLimit)} ر.ع</p>
+        <div style={{height:8,background:COLORS.border,borderRadius:4,overflow:"hidden"}}><div style={{width:`${Math.min(100,(totalSpent/(totalLimit||1))*100)}%`,height:"100%",background:totalSpent>totalLimit?COLORS.danger:COLORS.gold}} /></div>
+        <p style={{fontSize:11,color:COLORS.textSecondary,margin:"6px 0 0"}}>تم صرف {fmt(totalSpent)} من {fmt(totalLimit)}</p>
+      </Card>
+      <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:16}}>
+        {categories.map(c=>{
+          const spent=getSpent(c.name); const pct=Math.min(100,(spent/(c.limit_amount||1))*100); const over=spent>c.limit_amount; const isEditing=editing===c.id;
+          return (
+            <Card key={c.id}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}><span>{CATEGORY_ICONS[c.name]||"📦"}</span><span style={{fontSize:13,fontWeight:600}}>{c.name}</span></div>
+                <button onClick={()=>setEditing(isEditing?null:c.id)} style={{background:"none",border:"none",fontSize:12,color:COLORS.textMuted,cursor:"pointer",fontFamily:"inherit"}}>{isEditing?"إغلاق":"تعديل"}</button>
+              </div>
+              <div style={{height:6,background:COLORS.border,borderRadius:3,overflow:"hidden"}}><div style={{width:`${pct}%`,height:"100%",background:over?COLORS.danger:COLORS.success}} /></div>
+              <p style={{fontSize:11,color:over?COLORS.danger:COLORS.textSecondary,margin:"6px 0 0"}}>{fmt(spent)} / {fmt(c.limit_amount)} ر.ع {over?"— تجاوزت الميزانية":""}</p>
+              {isEditing && (
+                <div style={{marginTop:12,paddingTop:12,borderTop:`1px solid ${COLORS.border}`}}>
+                  <input type="number" defaultValue={c.limit_amount} onBlur={e=>onSaveCategory(c.id,{limit_amount:parseFloat(e.target.value)||0})} style={{...inputStyle,marginBottom:8}} />
+                  <button onClick={()=>{onDeleteCategory(c.id); setEditing(null);}} style={{...inputStyle,background:"#FBEAE7",color:COLORS.danger,border:"none",cursor:"pointer",textAlign:"center",fontWeight:700}}>حذف الفئة</button>
+                </div>
+              )}
+            </Card>
+          );
+        })}
+      </div>
+      <Card>
+        <p style={{fontSize:13,fontWeight:700,margin:"0 0 10px"}}>إضافة فئة جديدة</p>
+        <input type="text" placeholder="اسم الفئة" value={newCatName} onChange={e=>setNewCatName(e.target.value)} style={{...inputStyle,marginBottom:8}} />
+        <input type="number" placeholder="سقف الميزانية (ر.ع)" value={newCatLimit} onChange={e=>setNewCatLimit(e.target.value)} style={{...inputStyle,marginBottom:8}} />
+        <button onClick={()=>{ if(!newCatName.trim()) return; onAddCategory({name:newCatName.trim(),limit_amount:parseFloat(newCatLimit)||0}); setNewCatName(""); setNewCatLimit(""); }} style={primaryBtnStyle}>إضافة الفئة</button>
+      </Card>
+    </Screen>
+  );
+}
+
+function SettingsScreen({transactions,categories,userEmail,onSignOut}){
+  const exportData=()=>{
+    const blob=new Blob([JSON.stringify({transactions,categories},null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob); const a=document.createElement("a");
+    a.href=url; a.download="بياناتي-المالية.json"; a.click(); URL.revokeObjectURL(url);
+  };
+  return (
+    <Screen>
+      <TopBar title="الإعدادات" />
+      <Card style={{marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,paddingBottom:12,borderBottom:`1px solid ${COLORS.border}`,marginBottom:12}}>
+          <div style={{width:42,height:42,borderRadius:"50%",background:COLORS.navy,color:COLORS.goldLight,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14}}>{userEmail?userEmail[0].toUpperCase():"?"}</div>
+          <div><p style={{fontSize:14,fontWeight:700,margin:0}}>{userEmail}</p><p style={{fontSize:11,color:COLORS.textMuted,margin:0}}>حساب شخصي · Supabase</p></div>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0"}}><span style={{fontSize:13,color:COLORS.textSecondary}}>العملة</span><span style={{fontSize:12,color:COLORS.textMuted}}>ر.ع — ريال عماني</span></div>
+        <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0"}}><span style={{fontSize:13,color:COLORS.textSecondary}}>عدد الفئات</span><span style={{fontSize:12,color:COLORS.textMuted}}>{categories.length} فئة</span></div>
+        <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0"}}><span style={{fontSize:13,color:COLORS.textSecondary}}>عدد العمليات</span><span style={{fontSize:12,color:COLORS.textMuted}}>{transactions.length}</span></div>
+      </Card>
+      <button onClick={exportData} style={{...primaryBtnStyle,background:COLORS.card,color:COLORS.navy,border:`1px solid ${COLORS.border}`,marginBottom:10}}>تصدير بياناتي (JSON)</button>
+      <button onClick={onSignOut} style={{...primaryBtnStyle,background:"#FBEAE7",color:COLORS.danger,border:"none"}}>تسجيل الخروج</button>
+    </Screen>
+  );
+}
+
+function App(){
+  const [session,setSession]=useState(null);
+  const [checkingSession,setCheckingSession]=useState(true);
+  const [screen,setScreen]=useState("home");
+  const [transactions,setTransactions]=useState([]);
+  const [categories,setCategories]=useState([]);
+  const [dataLoaded,setDataLoaded]=useState(false);
+  const [configError,setConfigError]=useState(false);
+
+  useEffect(()=>{
+    if(!window.SUPABASE_URL || window.SUPABASE_URL.includes("ضع-هنا") || !window.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY.includes("ضع-هنا")){
+      setConfigError(true); setCheckingSession(false); return;
+    }
+    supabase.auth.getSession().then(({data})=>{ setSession(data.session); setCheckingSession(false); });
+    const {data:listener}=supabase.auth.onAuthStateChange((_e,newSession)=>setSession(newSession));
+    return ()=>listener.subscription.unsubscribe();
+  },[]);
+
+  const userId=session?.user?.id;
+
+  useEffect(()=>{
+    if(!userId) return;
+    (async()=>{
+      const {data:cats}=await supabase.from("categories").select("*").order("created_at");
+      if(cats && cats.length>0){ setCategories(cats); }
+      else {
+        const seeded=DEFAULT_CATEGORIES.map(c=>({...c,user_id:userId}));
+        const {data:inserted}=await supabase.from("categories").insert(seeded).select();
+        setCategories(inserted||[]);
       }
+      const {data:txs}=await supabase.from("transactions").select("*").order("date",{ascending:false});
+      setTransactions(txs||[]); setDataLoaded(true);
+    })();
+  },[userId]);
 
-      // عند فتح الصفحة (سواء دخول عادي أو رجوع من الرابط)
-      refreshUI();
+  const addTransaction=useCallback(async t=>{
+    const {data,error}=await supabase.from("transactions").insert({...t,user_id:userId}).select();
+    if(!error && data) setTransactions(prev=>[data[0],...prev]);
+  },[userId]);
+  const saveCategory=useCallback(async(id,patch)=>{
+    await supabase.from("categories").update(patch).eq("id",id);
+    setCategories(prev=>prev.map(c=>c.id===id?{...c,...patch}:c));
+  },[]);
+  const deleteCategory=useCallback(async id=>{
+    await supabase.from("categories").delete().eq("id",id);
+    setCategories(prev=>prev.filter(c=>c.id!==id));
+  },[]);
+  const addCategory=useCallback(async c=>{
+    const {data}=await supabase.from("categories").insert({...c,user_id:userId}).select();
+    if(data) setCategories(prev=>[...prev,data[0]]);
+  },[userId]);
+  const signOut=useCallback(async()=>{
+    await supabase.auth.signOut(); setTransactions([]); setCategories([]); setDataLoaded(false); setScreen("home");
+  },[]);
 
-      // لو تغيّر شيء أثناء الجلسة (اختياري لكنه مفيد)
-      supabase.auth.onAuthStateChange(() => refreshUI());
-    </script>
-  </body>
+  const thisMonth=monthKey(todayStr());
+  const monthTotals=useMemo(()=>transactions.filter(t=>monthKey(t.date)===thisMonth).reduce((acc,t)=>{ if(t.type==="income") acc.income+=Number(t.amount); else acc.expense+=Number(t.amount); return acc; },{income:0,expense:0}),[transactions,thisMonth]);
+  const categoryTotals=useMemo(()=>{
+    const map={};
+    transactions.filter(t=>t.type==="expense" && monthKey(t.date)===thisMonth).forEach(t=>{ map[t.category]=(map[t.category]||0)+Number(t.amount); });
+    return Object.entries(map).map(([name,total])=>({name,total})).sort((a,b)=>b.total-a.total);
+  },[transactions,thisMonth]);
+
+  if(configError){
+    return (
+      <div dir="rtl" style={{maxWidth:420,margin:"60px auto",padding:24,fontFamily:"sans-serif",background:"#FBEAE7",borderRadius:12,color:COLORS.danger}}>
+        <b>لم يتم إعداد الاتصال بعد.</b><br/>افتح ملف HTML بمحرر نصوص وعبّي SUPABASE_URL و SUPABASE_ANON_KEY في أعلى الملف.
+      </div>
+    );
+  }
+  if(checkingSession) return <div style={{textAlign:"center",padding:60,color:COLORS.textMuted}}>جارِ التحقق من الجلسة...</div>;
+  if(!session) return <AuthScreen />;
+  if(!dataLoaded) return <div style={{textAlign:"center",padding:60,color:COLORS.textMuted}}>جارِ تحميل بياناتك...</div>;
+
+  return (
+    <div dir="rtl" style={{maxWidth:480,margin:"0 auto",background:COLORS.cream,minHeight:"100vh",fontFamily:"'Segoe UI',Tahoma,Geneva,Verdana,sans-serif",color:COLORS.textPrimary,position:"relative"}}>
+      {screen==="home" && <HomeScreen transactions={transactions} monthTotals={monthTotals} />}
+      {screen==="add" && <AddScreen categories={categories} onAdd={addTransaction} setScreen={setScreen} />}
+      {screen==="reports" && <ReportsScreen categoryTotals={categoryTotals} monthTotals={monthTotals} />}
+      {screen==="budget" && <BudgetScreen categories={categories} categoryTotals={categoryTotals} onSaveCategory={saveCategory} onDeleteCategory={deleteCategory} onAddCategory={addCategory} />}
+      {screen==="settings" && <SettingsScreen transactions={transactions} categories={categories} userEmail={session.user.email} onSignOut={signOut} />}
+      <BottomNav screen={screen} setScreen={setScreen} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
 </html>
