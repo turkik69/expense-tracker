@@ -20,8 +20,8 @@
      كود الجداول والحماية كامل مرفق في الرد.
 ============================================ -->
 <script>
-  window.SUPABASE_URL = "ضع-هنا-Project-URL";
-  window.SUPABASE_ANON_KEY = "ضع-هنا-anon-public-key";
+  window.SUPABASE_URL = "https://zsauxbixkcmsuugeekzu.supabase.co";
+  window.SUPABASE_ANON_KEY = "sb_publishable_8PpJeyy9NXFN1235dLHYgQ_yjfbJADG";
 </script>
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -31,9 +31,12 @@
 
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useMemo, useCallback } = React;
-const supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true },
-});
+const isConfigured = window.SUPABASE_URL && !window.SUPABASE_URL.includes("ضع-هنا") && window.SUPABASE_ANON_KEY && !window.SUPABASE_ANON_KEY.includes("ضع-هنا");
+const supabase = window.supabase.createClient(
+  isConfigured ? window.SUPABASE_URL : "https://placeholder.supabase.co",
+  isConfigured ? window.SUPABASE_ANON_KEY : "placeholder-anon-key",
+  { auth: { persistSession: true, autoRefreshToken: true } }
+);
 
 const COLORS = {
   navy: "#0F2942", navyLight: "#1C3F5E", gold: "#C9A227", goldLight: "#E8CE7A",
@@ -367,7 +370,7 @@ function App(){
   const [configError,setConfigError]=useState(false);
 
   useEffect(()=>{
-    if(!window.SUPABASE_URL || window.SUPABASE_URL.includes("ضع-هنا") || !window.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY.includes("ضع-هنا")){
+    if(!isConfigured){
       setConfigError(true); setCheckingSession(false); return;
     }
     supabase.auth.getSession().then(({data})=>{ setSession(data.session); setCheckingSession(false); });
