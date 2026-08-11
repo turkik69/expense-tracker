@@ -51,10 +51,10 @@ const supabase = window.supabase.createClient(
 );
 
 const COLORS = {
-  navy: "#0B2135", navyLight: "#1E3F63", navyDeep: "#081826", gold: "#C9A227", goldLight: "#EDD48A",
-  cream: "#F7F4EC", card: "#FFFFFF", border: "#E9E3D3",
-  textPrimary: "#181815", textSecondary: "#6B6459", textMuted: "#9B9484",
-  danger: "#B3402F", success: "#2F6E48", shadow: "rgba(11,33,53,0.10)",
+  navy: "#1B4332", navyLight: "#2D6A4F", navyDeep: "#12291F", gold: "#3FBF6C", goldLight: "#9BEAB4",
+  cream: "#F0FAF2", card: "#FFFFFF", border: "#D9EFDD",
+  textPrimary: "#16291E", textSecondary: "#5C7A68", textMuted: "#93AC9E",
+  danger: "#D9634A", success: "#2F9E52", shadow: "rgba(27,67,50,0.12)",
 };
 const CATEGORY_ICONS = { "بقالة":"🛒","مواصلات":"⛽","سكن":"🏠","ترفيه":"🎬","صحة":"💊","تسوق":"🛍️","فواتير":"🧾","أخرى":"📦" };
 const RIYAL_ICON = "data:image/png;base64,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";
@@ -114,8 +114,8 @@ function highlightMessage(text, amountRaw, merchantRaw, markStyle){
   return escaped;
 }
 
-const inputStyle = { width:"100%", padding:"10px 12px", borderRadius:10, border:`1px solid ${COLORS.border}`, fontSize:13, fontFamily:"inherit", boxSizing:"border-box", background:COLORS.card, color:COLORS.textPrimary };
-const primaryBtnStyle = { width:"100%", padding:"13px 0", borderRadius:12, border:"none", background:COLORS.navy, color:COLORS.goldLight, fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"inherit" };
+const inputStyle = { width:"100%", padding:"14px 16px", borderRadius:14, border:`1.5px solid ${COLORS.border}`, fontSize:15, fontFamily:"inherit", boxSizing:"border-box", background:COLORS.card, color:COLORS.textPrimary };
+const primaryBtnStyle = { width:"100%", padding:"17px 0", borderRadius:16, border:"none", background:COLORS.navy, color:COLORS.goldLight, fontWeight:700, fontSize:16, cursor:"pointer", fontFamily:"inherit" };
 
 function AuthScreen(){
   const [mode,setMode]=useState("signin");
@@ -139,46 +139,46 @@ function AuthScreen(){
 
   return (
     <div dir="rtl" style={{maxWidth:420, margin:"calc(env(safe-area-inset-top) + 24px) auto 40px", background:COLORS.cream, borderRadius:22, border:`1px solid ${COLORS.border}`, boxShadow:"0 4px 20px rgba(11,33,53,0.08)", padding:28, fontFamily:"'Segoe UI',Tahoma,Geneva,Verdana,sans-serif"}}>
-      <h1 style={{color:COLORS.navy, fontSize:22, marginBottom:4}}>مصروفي</h1>
-      <p style={{color:COLORS.textSecondary, fontSize:13, marginBottom:24}}>{mode==="signin"?"سجّل الدخول لمتابعة مصاريفك":"أنشئ حسابك الشخصي"}</p>
+      <h1 style={{color:COLORS.navy, fontSize:25, marginBottom:4}}>مصروفي</h1>
+      <p style={{color:COLORS.textSecondary, fontSize:15, marginBottom:24}}>{mode==="signin"?"سجّل الدخول لمتابعة مصاريفك":"أنشئ حسابك الشخصي"}</p>
       <div style={{marginBottom:12}}>
-        <p style={{fontSize:12,color:COLORS.textSecondary,marginBottom:6}}>البريد الإلكتروني</p>
+        <p style={{fontSize:14,color:COLORS.textSecondary,marginBottom:6}}>البريد الإلكتروني</p>
         <input type="email" value={email} onChange={e=>setEmail(e.target.value)} style={inputStyle} placeholder="name@example.com" />
       </div>
       <div style={{marginBottom:16}}>
-        <p style={{fontSize:12,color:COLORS.textSecondary,marginBottom:6}}>كلمة المرور</p>
+        <p style={{fontSize:14,color:COLORS.textSecondary,marginBottom:6}}>كلمة المرور</p>
         <input type="password" value={password} onChange={e=>setPassword(e.target.value)} style={inputStyle} placeholder="••••••••" />
       </div>
-      {error && <p style={{color:COLORS.danger,fontSize:12,marginBottom:12}}>{error}</p>}
-      {info && <p style={{color:COLORS.success,fontSize:12,marginBottom:12}}>{info}</p>}
+      {error && <p style={{color:COLORS.danger,fontSize:14,marginBottom:12}}>{error}</p>}
+      {info && <p style={{color:COLORS.success,fontSize:14,marginBottom:12}}>{info}</p>}
       <button onClick={submit} disabled={loading} style={primaryBtnStyle}>{loading?"جارِ التحقق...":mode==="signin"?"تسجيل الدخول":"إنشاء حساب"}</button>
-      <p style={{textAlign:"center",fontSize:12,marginTop:16,color:COLORS.textSecondary}}>
+      <p style={{textAlign:"center",fontSize:14,marginTop:16,color:COLORS.textSecondary}}>
         {mode==="signin"?"ما عندك حساب؟ ":"عندك حساب؟ "}
         <button onClick={()=>setMode(mode==="signin"?"signup":"signin")} style={{background:"none",border:"none",color:COLORS.gold,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
           {mode==="signin"?"أنشئ حساب جديد":"سجّل الدخول"}
         </button>
       </p>
-      <p style={{textAlign:"center",fontSize:11,marginTop:8,color:COLORS.textMuted}}>بمجرد الدخول، هذا الجهاز يبقى مسجّلًا تلقائيًا في المرات القادمة.</p>
+      <p style={{textAlign:"center",fontSize:13,marginTop:8,color:COLORS.textMuted}}>بمجرد الدخول، هذا الجهاز يبقى مسجّلًا تلقائيًا في المرات القادمة.</p>
     </div>
   );
 }
 
 function Screen({children}){ return <div style={{display:"flex",flexDirection:"column",padding:"20px 18px 28px"}}>{children}</div>; }
-function TopBar({title}){ return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}><h1 style={{fontSize:20,fontWeight:700,color:COLORS.navy,margin:0}}>{title}</h1></div>; }
+function TopBar({title}){ return <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}><h1 style={{fontSize:23,fontWeight:700,color:COLORS.navy,margin:0}}>{title}</h1></div>; }
 function BottomNav({screen,setScreen}){
   const items=[{id:"home",icon:"🏠",label:"الرئيسية"},{id:"reports",icon:"📊",label:"التقارير"},{id:"add",icon:"➕",label:"إضافة"},{id:"budget",icon:"🎯",label:"الميزانية"},{id:"settings",icon:"⚙️",label:"الإعدادات"}];
   return (
-    <div style={{flexShrink:0,background:COLORS.card,borderTop:`1px solid ${COLORS.border}`,boxShadow:"0 -4px 16px rgba(11,33,53,0.07)",display:"flex",justifyContent:"space-around",padding:"10px 4px calc(8px + env(safe-area-inset-bottom))"}}>
+    <div style={{flexShrink:0,background:COLORS.card,borderTop:`1px solid ${COLORS.border}`,boxShadow:"0 -4px 16px rgba(11,33,53,0.07)",display:"flex",justifyContent:"space-around",padding:"12px 4px calc(10px + env(safe-area-inset-bottom))"}}>
       {items.map(it=>(
-        <button key={it.id} onClick={()=>setScreen(it.id)} style={{background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",color:screen===it.id?COLORS.gold:COLORS.textMuted,fontFamily:"inherit",padding:"4px 10px",borderRadius:12}}>
+        <button key={it.id} onClick={()=>setScreen(it.id)} style={{background:"none",border:"none",display:"flex",flexDirection:"column",alignItems:"center",gap:3,cursor:"pointer",color:screen===it.id?COLORS.gold:COLORS.textMuted,fontFamily:"inherit",padding:"6px 12px",borderRadius:12}}>
           <span style={{fontSize:it.id==="add"?32:25}}>{it.icon}</span>
-          <span style={{fontSize:11,fontWeight:screen===it.id?700:500}}>{it.label}</span>
+          <span style={{fontSize:13,fontWeight:screen===it.id?700:500}}>{it.label}</span>
         </button>
       ))}
     </div>
   );
 }
-function Card({children,style}){ return <div style={{background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:18,padding:16,boxShadow:`0 2px 10px ${COLORS.shadow}`,...style}}>{children}</div>; }
+function Card({children,style}){ return <div style={{background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:22,padding:20,boxShadow:`0 3px 12px ${COLORS.shadow}`,...style}}>{children}</div>; }
 
 function HomeScreen({transactions,monthTotals,categories,categoryTotals,presets,onQuickAdd,setScreen}){
   const recent=useMemo(()=>[...transactions].sort((a,b)=>a.date<b.date?1:-1).slice(0,5),[transactions]);
@@ -190,23 +190,23 @@ function HomeScreen({transactions,monthTotals,categories,categoryTotals,presets,
     <Screen>
       <TopBar title="مرحبًا 👋" />
       <div style={{background:`linear-gradient(135deg, ${COLORS.navy}, ${COLORS.navyLight})`,borderRadius:16,padding:20,color:COLORS.cream,marginBottom:16}}>
-        <p style={{fontSize:12,opacity:0.8,margin:0}}>الرصيد المتبقي هذا الشهر</p>
-        <p style={{fontSize:30,fontWeight:700,margin:"4px 0 4px",color:COLORS.goldLight,display:"flex",alignItems:"center",gap:6}}>{fmt(monthTotals.income-monthTotals.expense)}<Riyal size={25}/></p>
+        <p style={{fontSize:14,opacity:0.8,margin:0}}>الرصيد المتبقي هذا الشهر</p>
+        <p style={{fontSize:34,fontWeight:700,margin:"4px 0 4px",color:COLORS.goldLight,display:"flex",alignItems:"center",gap:6}}>{fmt(monthTotals.income-monthTotals.expense)}<Riyal size={25}/></p>
         <div style={{height:6,borderRadius:99,background:"rgba(255,255,255,0.14)",overflow:"hidden",margin:"10px 0 14px"}}><div style={{height:"100%",borderRadius:99,width:budgetPct+"%",background:budgetPct>=90?"#E8877A":COLORS.goldLight,transition:"width .4s ease"}} /></div>
         <div style={{display:"flex",gap:10}}>
-          <div style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"8px 12px"}}><p style={{fontSize:11,margin:0,opacity:0.75}}>المصروف</p><p style={{fontSize:15,fontWeight:700,margin:"2px 0 0"}}>{fmt(monthTotals.expense)}</p></div>
-          <div style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"8px 12px"}}><p style={{fontSize:11,margin:0,opacity:0.75}}>الدخل</p><p style={{fontSize:15,fontWeight:700,margin:"2px 0 0"}}>{fmt(monthTotals.income)}</p></div>
+          <div style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"11px 14px"}}><p style={{fontSize:13,margin:0,opacity:0.75}}>المصروف</p><p style={{fontSize:17,fontWeight:700,margin:"2px 0 0"}}>{fmt(monthTotals.expense)}</p></div>
+          <div style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"11px 14px"}}><p style={{fontSize:13,margin:0,opacity:0.75}}>الدخل</p><p style={{fontSize:17,fontWeight:700,margin:"2px 0 0"}}>{fmt(monthTotals.income)}</p></div>
         </div>
       </div>
 
       {presets && presets.length>0 && (
         <div style={{marginBottom:18}}>
-          <p style={{fontSize:13,fontWeight:700,color:COLORS.textSecondary,margin:"4px 0 10px"}}>إضافة سريعة</p>
+          <p style={{fontSize:15,fontWeight:700,color:COLORS.textSecondary,margin:"4px 0 10px"}}>إضافة سريعة</p>
           <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4}}>
             {presets.map(p=>(
-              <button key={p.id} onClick={()=>onQuickAdd(p)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:14,padding:"10px 12px",cursor:"pointer",fontFamily:"inherit",minWidth:64,flexShrink:0,boxShadow:`0 1px 4px ${COLORS.shadow}`}}>
-                <span style={{fontSize:20}}>{p.icon}</span>
-                <span style={{fontSize:10,color:COLORS.textSecondary,fontWeight:600,whiteSpace:"nowrap"}}>{p.label}</span>
+              <button key={p.id} onClick={()=>onQuickAdd(p)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:14,padding:"12px 15px",cursor:"pointer",fontFamily:"inherit",minWidth:64,flexShrink:0,boxShadow:`0 1px 4px ${COLORS.shadow}`}}>
+                <span style={{fontSize:23}}>{p.icon}</span>
+                <span style={{fontSize:12,color:COLORS.textSecondary,fontWeight:600,whiteSpace:"nowrap"}}>{p.label}</span>
               </button>
             ))}
           </div>
@@ -216,34 +216,34 @@ function HomeScreen({transactions,monthTotals,categories,categoryTotals,presets,
       {topCats.length>0 && (
         <div style={{marginBottom:18}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"4px 0 10px"}}>
-            <p style={{fontSize:13,fontWeight:700,color:COLORS.textSecondary,margin:0}}>مصاريف الشهر حسب الفئة</p>
-            <button onClick={()=>setScreen("reports")} style={{background:"none",border:"none",color:COLORS.gold,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>التفاصيل ‹</button>
+            <p style={{fontSize:15,fontWeight:700,color:COLORS.textSecondary,margin:0}}>مصاريف الشهر حسب الفئة</p>
+            <button onClick={()=>setScreen("reports")} style={{background:"none",border:"none",color:COLORS.gold,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>التفاصيل ‹</button>
           </div>
           <Card>
             {topCats.map((c,i)=>(
-              <div key={c.name} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:i<topCats.length-1?`1px solid ${COLORS.border}`:"none"}}>
-                <span style={{fontSize:18}}>{CATEGORY_ICONS[c.name]||"📦"}</span>
+              <div key={c.name} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:i<topCats.length-1?`1px solid ${COLORS.border}`:"none"}}>
+                <span style={{fontSize:20}}>{CATEGORY_ICONS[c.name]||"📦"}</span>
                 <div style={{flex:1,minWidth:0}}>
-                  <p style={{fontSize:12,margin:"0 0 4px",fontWeight:600}}>{c.name}</p>
+                  <p style={{fontSize:14,margin:"0 0 4px",fontWeight:600}}>{c.name}</p>
                   <div style={{height:4,borderRadius:99,background:COLORS.border,overflow:"hidden"}}><div style={{height:"100%",width:(c.total/maxCat*100)+"%",background:COLORS.gold,borderRadius:99}} /></div>
                 </div>
-                <span style={{fontSize:12,fontWeight:700,color:COLORS.textPrimary,display:"flex",alignItems:"center",gap:2,flexShrink:0}}>{fmt(c.total)}<Riyal size={10}/></span>
+                <span style={{fontSize:14,fontWeight:700,color:COLORS.textPrimary,display:"flex",alignItems:"center",gap:2,flexShrink:0}}>{fmt(c.total)}<Riyal size={10}/></span>
               </div>
             ))}
           </Card>
         </div>
       )}
 
-      <p style={{fontSize:13,fontWeight:700,color:COLORS.textSecondary,margin:"4px 0 10px"}}>آخر العمليات</p>
+      <p style={{fontSize:15,fontWeight:700,color:COLORS.textSecondary,margin:"4px 0 10px"}}>آخر العمليات</p>
       <Card>
-        {recent.length===0 && <p style={{fontSize:13,color:COLORS.textMuted,textAlign:"center",padding:"10px 0"}}>لا توجد عمليات بعد. أضف أول مصروف من زر + في الأسفل.</p>}
+        {recent.length===0 && <p style={{fontSize:15,color:COLORS.textMuted,textAlign:"center",padding:"13px 4px"}}>لا توجد عمليات بعد. أضف أول مصروف من زر + في الأسفل.</p>}
         {recent.map((t,i)=>(
-          <div key={t.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 0",borderBottom:i<recent.length-1?`1px solid ${COLORS.border}`:"none"}}>
+          <div key={t.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 4px",borderBottom:i<recent.length-1?`1px solid ${COLORS.border}`:"none"}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:22}}>{t.type==="income"?"💰":CATEGORY_ICONS[t.category]||"📦"}</span>
-              <div><p style={{fontSize:13,margin:0,fontWeight:500}}>{t.category}</p>{t.note && <p style={{fontSize:11,margin:0,color:COLORS.textMuted}}>{t.note}</p>}</div>
+              <span style={{fontSize:25}}>{t.type==="income"?"💰":CATEGORY_ICONS[t.category]||"📦"}</span>
+              <div><p style={{fontSize:15,margin:0,fontWeight:500}}>{t.category}</p>{t.note && <p style={{fontSize:13,margin:0,color:COLORS.textMuted}}>{t.note}</p>}</div>
             </div>
-            <span style={{fontSize:13,fontWeight:700,color:t.type==="income"?COLORS.success:COLORS.danger}}>{t.type==="income"?"+":"-"}{fmt(t.amount)}</span>
+            <span style={{fontSize:15,fontWeight:700,color:t.type==="income"?COLORS.success:COLORS.danger}}>{t.type==="income"?"+":"-"}{fmt(t.amount)}</span>
           </div>
         ))}
       </Card>
@@ -287,73 +287,73 @@ function AddScreen({categories,onAdd,setScreen,presets,onAddPreset,onDeletePrese
       <TopBar title="عملية جديدة" />
 
       <div style={{marginBottom:18}}>
-        <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:700}}>اختصارات سريعة</p>
+        <p style={{fontSize:14,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:700}}>اختصارات سريعة</p>
         <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:6}}>
           {presets.map(p=>(
             <div key={p.id} style={{position:"relative",flexShrink:0}}>
-              <button onClick={()=>applyPreset(p)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:14,padding:"10px 12px",cursor:"pointer",fontFamily:"inherit",minWidth:66,boxShadow:`0 1px 4px ${COLORS.shadow}`}}>
-                <span style={{fontSize:22}}>{p.icon}</span>
-                <span style={{fontSize:10,color:COLORS.textSecondary,fontWeight:600,whiteSpace:"nowrap"}}>{p.label}</span>
+              <button onClick={()=>applyPreset(p)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:14,padding:"12px 15px",cursor:"pointer",fontFamily:"inherit",minWidth:66,boxShadow:`0 1px 4px ${COLORS.shadow}`}}>
+                <span style={{fontSize:25}}>{p.icon}</span>
+                <span style={{fontSize:12,color:COLORS.textSecondary,fontWeight:600,whiteSpace:"nowrap"}}>{p.label}</span>
               </button>
-              <button onClick={(e)=>{e.stopPropagation();onDeletePreset(p.id);}} aria-label="حذف" style={{position:"absolute",top:-6,left:-6,width:20,height:20,borderRadius:10,background:COLORS.danger,color:"#fff",border:"2px solid "+COLORS.cream,fontSize:12,lineHeight:"16px",cursor:"pointer",padding:0}}>×</button>
+              <button onClick={(e)=>{e.stopPropagation();onDeletePreset(p.id);}} aria-label="حذف" style={{position:"absolute",top:-6,left:-6,width:20,height:20,borderRadius:10,background:COLORS.danger,color:"#fff",border:"2px solid "+COLORS.cream,fontSize:14,lineHeight:"16px",cursor:"pointer",padding:0}}>×</button>
             </div>
           ))}
-          <button onClick={()=>setShowNewPreset(v=>!v)} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,background:"none",border:`1.5px dashed ${COLORS.border}`,borderRadius:14,padding:"10px 12px",cursor:"pointer",fontFamily:"inherit",minWidth:66,color:COLORS.textMuted,flexShrink:0}}>
-            <span style={{fontSize:20}}>➕</span>
-            <span style={{fontSize:10,fontWeight:600}}>جديد</span>
+          <button onClick={()=>setShowNewPreset(v=>!v)} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,background:"none",border:`1.5px dashed ${COLORS.border}`,borderRadius:14,padding:"12px 15px",cursor:"pointer",fontFamily:"inherit",minWidth:66,color:COLORS.textMuted,flexShrink:0}}>
+            <span style={{fontSize:23}}>➕</span>
+            <span style={{fontSize:12,fontWeight:600}}>جديد</span>
           </button>
         </div>
         {showNewPreset && (
           <Card style={{marginTop:10}}>
             <div style={{display:"flex",gap:8,marginBottom:8}}>
-              <input type="text" value={npIcon} onChange={e=>setNpIcon(e.target.value.slice(-2))} style={{...inputStyle,width:52,textAlign:"center",fontSize:18,padding:"8px 0",flexShrink:0}} />
+              <input type="text" value={npIcon} onChange={e=>setNpIcon(e.target.value.slice(-2))} style={{...inputStyle,width:52,textAlign:"center",fontSize:20,padding:"10px 0",flexShrink:0}} />
               <input type="text" placeholder="اسم الاختصار (مثال: بنزين السيارة)" value={npLabel} onChange={e=>setNpLabel(e.target.value)} style={{...inputStyle,flex:1}} />
             </div>
             <select value={npCategory} onChange={e=>setNpCategory(e.target.value)} style={{...inputStyle,marginBottom:8}}>
               {categories.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
             </select>
-            <button onClick={()=>{ if(!npLabel.trim())return; onAddPreset({label:npLabel.trim(),icon:npIcon||"📌",category:npCategory}); setNpLabel(""); setNpIcon("📌"); setShowNewPreset(false); }} style={{...primaryBtnStyle,padding:"10px 0"}}>إضافة الاختصار</button>
+            <button onClick={()=>{ if(!npLabel.trim())return; onAddPreset({label:npLabel.trim(),icon:npIcon||"📌",category:npCategory}); setNpLabel(""); setNpIcon("📌"); setShowNewPreset(false); }} style={{...primaryBtnStyle,padding:"13px 4px"}}>إضافة الاختصار</button>
           </Card>
         )}
       </div>
 
       <Card style={{marginBottom:16}}>
-        <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:700}}>الصق نص رسالة الخصم من البنك (اختياري)</p>
+        <p style={{fontSize:14,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:700}}>الصق نص رسالة الخصم من البنك (اختياري)</p>
         <textarea value={smsText} onChange={e=>setSmsText(e.target.value)} rows={3} style={{...inputStyle,resize:"none",fontFamily:"inherit"}} />
-        <button onClick={extract} style={{...primaryBtnStyle,marginTop:10,padding:"11px 0",background:COLORS.card,color:COLORS.navy,border:`1px solid ${COLORS.gold}`}}>✨ استخراج البيانات</button>
+        <button onClick={extract} style={{...primaryBtnStyle,marginTop:10,padding:"13px 0",background:COLORS.card,color:COLORS.navy,border:`1px solid ${COLORS.gold}`}}>✨ استخراج البيانات</button>
         {preview && (
-          <div style={{marginTop:10,fontSize:12,lineHeight:1.9,color:COLORS.textSecondary,background:COLORS.cream,borderRadius:10,padding:10}}
+          <div style={{marginTop:10,fontSize:14,lineHeight:1.9,color:COLORS.textSecondary,background:COLORS.cream,borderRadius:10,padding:10}}
                dangerouslySetInnerHTML={{__html: highlightMessage(preview.text, preview.amountRaw, preview.merchantRaw, `background:${COLORS.goldLight};color:${COLORS.navy};padding:1px 4px;border-radius:4px;font-weight:700;`)}} />
         )}
       </Card>
       <div style={{display:"flex",gap:8,marginBottom:18}}>
         {[{id:"expense",label:"مصروف"},{id:"income",label:"دخل"}].map(t=>(
-          <button key={t.id} onClick={()=>setType(t.id)} style={{flex:1,padding:"10px 0",borderRadius:10,border:`1px solid ${type===t.id?COLORS.navy:COLORS.border}`,background:type===t.id?COLORS.navy:COLORS.card,color:type===t.id?COLORS.goldLight:COLORS.textSecondary,fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>{t.label}</button>
+          <button key={t.id} onClick={()=>setType(t.id)} style={{flex:1,padding:"13px 4px",borderRadius:10,border:`1px solid ${type===t.id?COLORS.navy:COLORS.border}`,background:type===t.id?COLORS.navy:COLORS.card,color:type===t.id?COLORS.goldLight:COLORS.textSecondary,fontWeight:700,fontSize:15,cursor:"pointer",fontFamily:"inherit"}}>{t.label}</button>
         ))}
       </div>
       <Card style={{textAlign:"center",marginBottom:16}}>
-        <p style={{fontSize:12,color:COLORS.textMuted,margin:"0 0 6px",display:"flex",alignItems:"center",gap:4}}>المبلغ <Riyal size={11}/></p>
-        <input id="amountInput" type="number" inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.000" style={{width:"100%",border:"none",outline:"none",fontSize:32,fontWeight:700,textAlign:"center",color:COLORS.navy,fontFamily:"inherit"}} />
+        <p style={{fontSize:14,color:COLORS.textMuted,margin:"0 0 6px",display:"flex",alignItems:"center",gap:4}}>المبلغ <Riyal size={11}/></p>
+        <input id="amountInput" type="number" inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.000" style={{width:"100%",border:"none",outline:"none",fontSize:36,fontWeight:700,textAlign:"center",color:COLORS.navy,fontFamily:"inherit"}} />
       </Card>
       {type==="expense" && (
         <div style={{marginBottom:16}}>
-          <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:700}}>الفئة</p>
+          <p style={{fontSize:14,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:700}}>الفئة</p>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
             {categories.map(c=>(
               <button key={c.id} onClick={()=>setCategory(c.name)} style={{padding:"10px 4px",borderRadius:10,border:`1px solid ${category===c.name?COLORS.gold:COLORS.border}`,background:category===c.name?"#FBF4DE":COLORS.card,cursor:"pointer",fontFamily:"inherit"}}>
-                <div style={{fontSize:22}}>{CATEGORY_ICONS[c.name]||"📦"}</div>
-                <div style={{fontSize:10,marginTop:4,color:COLORS.textSecondary}}>{c.name}</div>
+                <div style={{fontSize:25}}>{CATEGORY_ICONS[c.name]||"📦"}</div>
+                <div style={{fontSize:12,marginTop:4,color:COLORS.textSecondary}}>{c.name}</div>
               </button>
             ))}
           </div>
         </div>
       )}
       <div style={{marginBottom:12}}>
-        <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 6px",fontWeight:700}}>ملاحظة (اختياري)</p>
+        <p style={{fontSize:14,color:COLORS.textSecondary,margin:"0 0 6px",fontWeight:700}}>ملاحظة (اختياري)</p>
         <input type="text" value={note} onChange={e=>setNote(e.target.value)} placeholder="مثال: تسوق الأسبوع" style={inputStyle} />
       </div>
       <div style={{marginBottom:20}}>
-        <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 6px",fontWeight:700}}>التاريخ</p>
+        <p style={{fontSize:14,color:COLORS.textSecondary,margin:"0 0 6px",fontWeight:700}}>التاريخ</p>
         <input type="date" value={date} onChange={e=>setDate(e.target.value)} style={inputStyle} />
       </div>
       <button onClick={submit} disabled={saving} style={primaryBtnStyle}>{saving?"جارِ الحفظ...":"حفظ العملية"}</button>
@@ -371,8 +371,8 @@ function ReportsScreen({categoryTotals,monthTotals}){
     <Screen>
       <TopBar title="التقارير" />
       <Card style={{marginBottom:16}}>
-        <p style={{fontSize:13,fontWeight:700,margin:"0 0 12px"}}>توزيع المصاريف هذا الشهر</p>
-        {categoryTotals.length===0 ? <p style={{fontSize:13,color:COLORS.textMuted,textAlign:"center",padding:"20px 0"}}>لا توجد مصاريف مسجلة هذا الشهر بعد.</p> : (
+        <p style={{fontSize:15,fontWeight:700,margin:"0 0 12px"}}>توزيع المصاريف هذا الشهر</p>
+        {categoryTotals.length===0 ? <p style={{fontSize:15,color:COLORS.textMuted,textAlign:"center",padding:"20px 0"}}>لا توجد مصاريف مسجلة هذا الشهر بعد.</p> : (
           <>
             <div style={{display:"flex",justifyContent:"center",padding:"8px 0 16px"}}>
               <svg width="140" height="140" viewBox="0 0 36 36">
@@ -387,8 +387,8 @@ function ReportsScreen({categoryTotals,monthTotals}){
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {arcs.map(a=>(
                 <div key={a.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{width:8,height:8,borderRadius:4,background:a.color,display:"inline-block"}} /><span style={{fontSize:12}}>{a.name}</span></div>
-                  <span style={{fontSize:12,color:COLORS.textSecondary,display:"inline-flex",alignItems:"center",gap:3}}>{fmt(a.total)}<Riyal size={11}/> · {Math.round(a.pct)}%</span>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{width:8,height:8,borderRadius:4,background:a.color,display:"inline-block"}} /><span style={{fontSize:14}}>{a.name}</span></div>
+                  <span style={{fontSize:14,color:COLORS.textSecondary,display:"inline-flex",alignItems:"center",gap:3}}>{fmt(a.total)}<Riyal size={11}/> · {Math.round(a.pct)}%</span>
                 </div>
               ))}
             </div>
@@ -408,10 +408,10 @@ function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory
     <Screen>
       <TopBar title="الميزانية الشهرية" />
       <Card style={{marginBottom:16}}>
-        <p style={{fontSize:12,color:COLORS.textMuted,margin:0}}>إجمالي الميزانية</p>
-        <p style={{fontSize:22,fontWeight:700,margin:"4px 0 8px",color:COLORS.navy,display:"flex",alignItems:"center",gap:5}}>{fmt(totalLimit)}<Riyal size={18}/></p>
+        <p style={{fontSize:14,color:COLORS.textMuted,margin:0}}>إجمالي الميزانية</p>
+        <p style={{fontSize:25,fontWeight:700,margin:"4px 0 8px",color:COLORS.navy,display:"flex",alignItems:"center",gap:5}}>{fmt(totalLimit)}<Riyal size={18}/></p>
         <div style={{height:8,background:COLORS.border,borderRadius:4,overflow:"hidden"}}><div style={{width:`${Math.min(100,(totalSpent/(totalLimit||1))*100)}%`,height:"100%",background:totalSpent>totalLimit?COLORS.danger:COLORS.gold}} /></div>
-        <p style={{fontSize:11,color:COLORS.textSecondary,margin:"6px 0 0"}}>تم صرف {fmt(totalSpent)} من {fmt(totalLimit)}</p>
+        <p style={{fontSize:13,color:COLORS.textSecondary,margin:"6px 0 0"}}>تم صرف {fmt(totalSpent)} من {fmt(totalLimit)}</p>
       </Card>
       <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:16}}>
         {categories.map(c=>{
@@ -419,11 +419,11 @@ function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory
           return (
             <Card key={c.id}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:20}}>{CATEGORY_ICONS[c.name]||"📦"}</span><span style={{fontSize:13,fontWeight:600}}>{c.name}</span></div>
-                <button onClick={()=>setEditing(isEditing?null:c.id)} style={{background:"none",border:"none",fontSize:12,color:COLORS.textMuted,cursor:"pointer",fontFamily:"inherit"}}>{isEditing?"إغلاق":"تعديل"}</button>
+                <div style={{display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:23}}>{CATEGORY_ICONS[c.name]||"📦"}</span><span style={{fontSize:15,fontWeight:600}}>{c.name}</span></div>
+                <button onClick={()=>setEditing(isEditing?null:c.id)} style={{background:"none",border:"none",fontSize:14,color:COLORS.textMuted,cursor:"pointer",fontFamily:"inherit"}}>{isEditing?"إغلاق":"تعديل"}</button>
               </div>
               <div style={{height:6,background:COLORS.border,borderRadius:3,overflow:"hidden"}}><div style={{width:`${pct}%`,height:"100%",background:over?COLORS.danger:COLORS.success}} /></div>
-              <p style={{fontSize:11,color:over?COLORS.danger:COLORS.textSecondary,margin:"6px 0 0",display:"flex",alignItems:"center",gap:3,flexWrap:"wrap"}}>{fmt(spent)} / {fmt(c.limit_amount)}<Riyal size={10}/> {over?"— تجاوزت الميزانية":""}</p>
+              <p style={{fontSize:13,color:over?COLORS.danger:COLORS.textSecondary,margin:"6px 0 0",display:"flex",alignItems:"center",gap:3,flexWrap:"wrap"}}>{fmt(spent)} / {fmt(c.limit_amount)}<Riyal size={10}/> {over?"— تجاوزت الميزانية":""}</p>
               {isEditing && (
                 <div style={{marginTop:12,paddingTop:12,borderTop:`1px solid ${COLORS.border}`}}>
                   <input type="number" defaultValue={c.limit_amount} onBlur={e=>onSaveCategory(c.id,{limit_amount:parseFloat(e.target.value)||0})} style={{...inputStyle,marginBottom:8}} />
@@ -435,9 +435,9 @@ function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory
         })}
       </div>
       <Card>
-        <p style={{fontSize:13,fontWeight:700,margin:"0 0 10px"}}>إضافة فئة جديدة</p>
+        <p style={{fontSize:15,fontWeight:700,margin:"0 0 10px"}}>إضافة فئة جديدة</p>
         <input type="text" placeholder="اسم الفئة" value={newCatName} onChange={e=>setNewCatName(e.target.value)} style={{...inputStyle,marginBottom:8}} />
-        <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 6px",display:"flex",alignItems:"center",gap:4}}>سقف الميزانية <Riyal size={11}/></p>
+        <p style={{fontSize:14,color:COLORS.textSecondary,margin:"0 0 6px",display:"flex",alignItems:"center",gap:4}}>سقف الميزانية <Riyal size={11}/></p>
         <input type="number" placeholder="0.000" value={newCatLimit} onChange={e=>setNewCatLimit(e.target.value)} style={{...inputStyle,marginBottom:8}} />
         <button onClick={()=>{ if(!newCatName.trim()) return; onAddCategory({name:newCatName.trim(),limit_amount:parseFloat(newCatLimit)||0}); setNewCatName(""); setNewCatLimit(""); }} style={primaryBtnStyle}>إضافة الفئة</button>
       </Card>
@@ -456,12 +456,12 @@ function SettingsScreen({transactions,categories,userEmail,onSignOut}){
       <TopBar title="الإعدادات" />
       <Card style={{marginBottom:16}}>
         <div style={{display:"flex",alignItems:"center",gap:10,paddingBottom:12,borderBottom:`1px solid ${COLORS.border}`,marginBottom:12}}>
-          <div style={{width:42,height:42,borderRadius:"50%",background:COLORS.navy,color:COLORS.goldLight,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:14}}>{userEmail?userEmail[0].toUpperCase():"?"}</div>
-          <div><p style={{fontSize:14,fontWeight:700,margin:0}}>{userEmail}</p><p style={{fontSize:11,color:COLORS.textMuted,margin:0}}>حساب شخصي · Supabase</p></div>
+          <div style={{width:42,height:42,borderRadius:"50%",background:COLORS.navy,color:COLORS.goldLight,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:16}}>{userEmail?userEmail[0].toUpperCase():"?"}</div>
+          <div><p style={{fontSize:16,fontWeight:700,margin:0}}>{userEmail}</p><p style={{fontSize:13,color:COLORS.textMuted,margin:0}}>حساب شخصي · Supabase</p></div>
         </div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0"}}><span style={{fontSize:13,color:COLORS.textSecondary}}>العملة</span><span style={{fontSize:12,color:COLORS.textMuted,display:"inline-flex",alignItems:"center",gap:4}}><Riyal size={12}/> ريال عماني</span></div>
-        <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0"}}><span style={{fontSize:13,color:COLORS.textSecondary}}>عدد الفئات</span><span style={{fontSize:12,color:COLORS.textMuted}}>{categories.length} فئة</span></div>
-        <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0"}}><span style={{fontSize:13,color:COLORS.textSecondary}}>عدد العمليات</span><span style={{fontSize:12,color:COLORS.textMuted}}>{transactions.length}</span></div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0"}}><span style={{fontSize:15,color:COLORS.textSecondary}}>العملة</span><span style={{fontSize:14,color:COLORS.textMuted,display:"inline-flex",alignItems:"center",gap:4}}><Riyal size={12}/> ريال عماني</span></div>
+        <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0"}}><span style={{fontSize:15,color:COLORS.textSecondary}}>عدد الفئات</span><span style={{fontSize:14,color:COLORS.textMuted}}>{categories.length} فئة</span></div>
+        <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0"}}><span style={{fontSize:15,color:COLORS.textSecondary}}>عدد العمليات</span><span style={{fontSize:14,color:COLORS.textMuted}}>{transactions.length}</span></div>
       </Card>
       <button onClick={exportData} style={{...primaryBtnStyle,background:COLORS.card,color:COLORS.navy,border:`1px solid ${COLORS.border}`,marginBottom:10}}>تصدير بياناتي (JSON)</button>
       <button onClick={onSignOut} style={{...primaryBtnStyle,background:"#FBEAE7",color:COLORS.danger,border:"none"}}>تسجيل الخروج</button>
