@@ -64,7 +64,16 @@ function Riyal({size=14,style={}}){
 const DEFAULT_CATEGORIES = [
   { name: "بقالة", limit_amount: 150 }, { name: "مواصلات", limit_amount: 80 },
   { name: "سكن", limit_amount: 170 }, { name: "ترفيه", limit_amount: 100 },
-  { name: "فواتير", limit_amount: 60 },
+  { name: "فواتير", limit_amount: 60 }, { name: "أخرى", limit_amount: 50 },
+];
+const DEFAULT_PRESETS = [
+  { label: "وقود", icon: "⛽", category: "مواصلات" },
+  { label: "راشن", icon: "🛒", category: "بقالة" },
+  { label: "فواكه", icon: "🍎", category: "بقالة" },
+  { label: "خضار", icon: "🥦", category: "بقالة" },
+  { label: "طلعة للعائلة", icon: "👨‍👩‍👧‍👦", category: "ترفيه" },
+  { label: "مصروف أسبوعي", icon: "📅", category: "أخرى" },
+  { label: "مصروف شهري", icon: "🗓️", category: "أخرى" },
 ];
 function fmt(n){ return Number(n||0).toLocaleString("ar-OM",{minimumFractionDigits:3,maximumFractionDigits:3}); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -171,19 +180,60 @@ function BottomNav({screen,setScreen}){
 }
 function Card({children,style}){ return <div style={{background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:18,padding:16,boxShadow:`0 2px 10px ${COLORS.shadow}`,...style}}>{children}</div>; }
 
-function HomeScreen({transactions,monthTotals}){
+function HomeScreen({transactions,monthTotals,categories,categoryTotals,presets,onQuickAdd,setScreen}){
   const recent=useMemo(()=>[...transactions].sort((a,b)=>a.date<b.date?1:-1).slice(0,5),[transactions]);
+  const budgetTotal=useMemo(()=>categories.reduce((s,c)=>s+Number(c.limit_amount||0),0)||1,[categories]);
+  const budgetPct=Math.min(100,(monthTotals.expense/budgetTotal)*100);
+  const topCats=useMemo(()=>[...categoryTotals].sort((a,b)=>b.total-a.total).slice(0,4),[categoryTotals]);
+  const maxCat=topCats[0]?.total||1;
   return (
     <Screen>
       <TopBar title="مرحبًا 👋" />
       <div style={{background:`linear-gradient(135deg, ${COLORS.navy}, ${COLORS.navyLight})`,borderRadius:16,padding:20,color:COLORS.cream,marginBottom:16}}>
         <p style={{fontSize:12,opacity:0.8,margin:0}}>الرصيد المتبقي هذا الشهر</p>
-        <p style={{fontSize:28,fontWeight:700,margin:"4px 0 14px",color:COLORS.goldLight,display:"flex",alignItems:"center",gap:6}}>{fmt(monthTotals.income-monthTotals.expense)}<Riyal size={24}/></p>
+        <p style={{fontSize:30,fontWeight:700,margin:"4px 0 4px",color:COLORS.goldLight,display:"flex",alignItems:"center",gap:6}}>{fmt(monthTotals.income-monthTotals.expense)}<Riyal size={25}/></p>
+        <div style={{height:6,borderRadius:99,background:"rgba(255,255,255,0.14)",overflow:"hidden",margin:"10px 0 14px"}}><div style={{height:"100%",borderRadius:99,width:budgetPct+"%",background:budgetPct>=90?"#E8877A":COLORS.goldLight,transition:"width .4s ease"}} /></div>
         <div style={{display:"flex",gap:10}}>
           <div style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"8px 12px"}}><p style={{fontSize:11,margin:0,opacity:0.75}}>المصروف</p><p style={{fontSize:15,fontWeight:700,margin:"2px 0 0"}}>{fmt(monthTotals.expense)}</p></div>
           <div style={{flex:1,background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"8px 12px"}}><p style={{fontSize:11,margin:0,opacity:0.75}}>الدخل</p><p style={{fontSize:15,fontWeight:700,margin:"2px 0 0"}}>{fmt(monthTotals.income)}</p></div>
         </div>
       </div>
+
+      {presets && presets.length>0 && (
+        <div style={{marginBottom:18}}>
+          <p style={{fontSize:13,fontWeight:700,color:COLORS.textSecondary,margin:"4px 0 10px"}}>إضافة سريعة</p>
+          <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4}}>
+            {presets.map(p=>(
+              <button key={p.id} onClick={()=>onQuickAdd(p)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:14,padding:"10px 12px",cursor:"pointer",fontFamily:"inherit",minWidth:64,flexShrink:0,boxShadow:`0 1px 4px ${COLORS.shadow}`}}>
+                <span style={{fontSize:20}}>{p.icon}</span>
+                <span style={{fontSize:10,color:COLORS.textSecondary,fontWeight:600,whiteSpace:"nowrap"}}>{p.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {topCats.length>0 && (
+        <div style={{marginBottom:18}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"4px 0 10px"}}>
+            <p style={{fontSize:13,fontWeight:700,color:COLORS.textSecondary,margin:0}}>مصاريف الشهر حسب الفئة</p>
+            <button onClick={()=>setScreen("reports")} style={{background:"none",border:"none",color:COLORS.gold,fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>التفاصيل ‹</button>
+          </div>
+          <Card>
+            {topCats.map((c,i)=>(
+              <div key={c.name} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:i<topCats.length-1?`1px solid ${COLORS.border}`:"none"}}>
+                <span style={{fontSize:18}}>{CATEGORY_ICONS[c.name]||"📦"}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <p style={{fontSize:12,margin:"0 0 4px",fontWeight:600}}>{c.name}</p>
+                  <div style={{height:4,borderRadius:99,background:COLORS.border,overflow:"hidden"}}><div style={{height:"100%",width:(c.total/maxCat*100)+"%",background:COLORS.gold,borderRadius:99}} /></div>
+                </div>
+                <span style={{fontSize:12,fontWeight:700,color:COLORS.textPrimary,display:"flex",alignItems:"center",gap:2,flexShrink:0}}>{fmt(c.total)}<Riyal size={10}/></span>
+              </div>
+            ))}
+          </Card>
+        </div>
+      )}
+
       <p style={{fontSize:13,fontWeight:700,color:COLORS.textSecondary,margin:"4px 0 10px"}}>آخر العمليات</p>
       <Card>
         {recent.length===0 && <p style={{fontSize:13,color:COLORS.textMuted,textAlign:"center",padding:"10px 0"}}>لا توجد عمليات بعد. أضف أول مصروف من زر + في الأسفل.</p>}
@@ -201,12 +251,22 @@ function HomeScreen({transactions,monthTotals}){
   );
 }
 
-function AddScreen({categories,onAdd,setScreen}){
+function AddScreen({categories,onAdd,setScreen,presets,onAddPreset,onDeletePreset,pendingPreset,clearPendingPreset}){
   const [type,setType]=useState("expense"); const [amount,setAmount]=useState("");
   const [category,setCategory]=useState(categories[0]?.name||"أخرى"); const [note,setNote]=useState("");
   const [date,setDate]=useState(todayStr()); const [saving,setSaving]=useState(false);
   const [smsText,setSmsText]=useState("عزيزي العميل، تم خصم مبلغ 8.750 ر.ع من حسابك لدى مطعم بيت الشاي بتاريخ 09/08/2026 الساعة 13:45. الرصيد المتاح: 245.300 ر.ع");
   const [preview,setPreview]=useState(null);
+  const [showNewPreset,setShowNewPreset]=useState(false);
+  const [npLabel,setNpLabel]=useState(""); const [npIcon,setNpIcon]=useState("📌");
+  const [npCategory,setNpCategory]=useState(categories[0]?.name||"أخرى");
+  const applyPreset=(p)=>{
+    setType("expense"); setCategory(p.category); setNote(p.label); setAmount("");
+    setTimeout(()=>{ const el=document.getElementById("amountInput"); if(el) el.focus(); }, 60);
+  };
+  useEffect(()=>{
+    if(pendingPreset){ applyPreset(pendingPreset); clearPendingPreset(); }
+  },[pendingPreset]);
   const extract=()=>{
     const {amount:a,merchant:m,amountRaw,merchantRaw}=extractFromMessage(smsText);
     setType("expense");
@@ -225,6 +285,38 @@ function AddScreen({categories,onAdd,setScreen}){
   return (
     <Screen>
       <TopBar title="عملية جديدة" />
+
+      <div style={{marginBottom:18}}>
+        <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:700}}>اختصارات سريعة</p>
+        <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:6}}>
+          {presets.map(p=>(
+            <div key={p.id} style={{position:"relative",flexShrink:0}}>
+              <button onClick={()=>applyPreset(p)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:14,padding:"10px 12px",cursor:"pointer",fontFamily:"inherit",minWidth:66,boxShadow:`0 1px 4px ${COLORS.shadow}`}}>
+                <span style={{fontSize:22}}>{p.icon}</span>
+                <span style={{fontSize:10,color:COLORS.textSecondary,fontWeight:600,whiteSpace:"nowrap"}}>{p.label}</span>
+              </button>
+              <button onClick={(e)=>{e.stopPropagation();onDeletePreset(p.id);}} aria-label="حذف" style={{position:"absolute",top:-6,left:-6,width:20,height:20,borderRadius:10,background:COLORS.danger,color:"#fff",border:"2px solid "+COLORS.cream,fontSize:12,lineHeight:"16px",cursor:"pointer",padding:0}}>×</button>
+            </div>
+          ))}
+          <button onClick={()=>setShowNewPreset(v=>!v)} style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,background:"none",border:`1.5px dashed ${COLORS.border}`,borderRadius:14,padding:"10px 12px",cursor:"pointer",fontFamily:"inherit",minWidth:66,color:COLORS.textMuted,flexShrink:0}}>
+            <span style={{fontSize:20}}>➕</span>
+            <span style={{fontSize:10,fontWeight:600}}>جديد</span>
+          </button>
+        </div>
+        {showNewPreset && (
+          <Card style={{marginTop:10}}>
+            <div style={{display:"flex",gap:8,marginBottom:8}}>
+              <input type="text" value={npIcon} onChange={e=>setNpIcon(e.target.value.slice(-2))} style={{...inputStyle,width:52,textAlign:"center",fontSize:18,padding:"8px 0",flexShrink:0}} />
+              <input type="text" placeholder="اسم الاختصار (مثال: بنزين السيارة)" value={npLabel} onChange={e=>setNpLabel(e.target.value)} style={{...inputStyle,flex:1}} />
+            </div>
+            <select value={npCategory} onChange={e=>setNpCategory(e.target.value)} style={{...inputStyle,marginBottom:8}}>
+              {categories.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
+            <button onClick={()=>{ if(!npLabel.trim())return; onAddPreset({label:npLabel.trim(),icon:npIcon||"📌",category:npCategory}); setNpLabel(""); setNpIcon("📌"); setShowNewPreset(false); }} style={{...primaryBtnStyle,padding:"10px 0"}}>إضافة الاختصار</button>
+          </Card>
+        )}
+      </div>
+
       <Card style={{marginBottom:16}}>
         <p style={{fontSize:12,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:700}}>الصق نص رسالة الخصم من البنك (اختياري)</p>
         <textarea value={smsText} onChange={e=>setSmsText(e.target.value)} rows={3} style={{...inputStyle,resize:"none",fontFamily:"inherit"}} />
@@ -241,7 +333,7 @@ function AddScreen({categories,onAdd,setScreen}){
       </div>
       <Card style={{textAlign:"center",marginBottom:16}}>
         <p style={{fontSize:12,color:COLORS.textMuted,margin:"0 0 6px",display:"flex",alignItems:"center",gap:4}}>المبلغ <Riyal size={11}/></p>
-        <input type="number" inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.000" style={{width:"100%",border:"none",outline:"none",fontSize:32,fontWeight:700,textAlign:"center",color:COLORS.navy,fontFamily:"inherit"}} />
+        <input id="amountInput" type="number" inputMode="decimal" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="0.000" style={{width:"100%",border:"none",outline:"none",fontSize:32,fontWeight:700,textAlign:"center",color:COLORS.navy,fontFamily:"inherit"}} />
       </Card>
       {type==="expense" && (
         <div style={{marginBottom:16}}>
@@ -383,6 +475,8 @@ function App(){
   const [screen,setScreen]=useState("home");
   const [transactions,setTransactions]=useState([]);
   const [categories,setCategories]=useState([]);
+  const [presets,setPresets]=useState([]);
+  const [pendingPreset,setPendingPreset]=useState(null);
   const [dataLoaded,setDataLoaded]=useState(false);
   const [configError,setConfigError]=useState(false);
 
@@ -407,6 +501,13 @@ function App(){
         const {data:inserted}=await supabase.from("categories").insert(seeded).select();
         setCategories(inserted||[]);
       }
+      const {data:pre}=await supabase.from("presets").select("*").order("created_at");
+      if(pre && pre.length>0){ setPresets(pre); }
+      else {
+        const seededPre=DEFAULT_PRESETS.map(p=>({...p,user_id:userId}));
+        const {data:insertedPre}=await supabase.from("presets").insert(seededPre).select();
+        setPresets(insertedPre||[]);
+      }
       const {data:txs}=await supabase.from("transactions").select("*").order("date",{ascending:false});
       setTransactions(txs||[]); setDataLoaded(true);
     })();
@@ -428,6 +529,14 @@ function App(){
     const {data}=await supabase.from("categories").insert({...c,user_id:userId}).select();
     if(data) setCategories(prev=>[...prev,data[0]]);
   },[userId]);
+  const addPreset=useCallback(async p=>{
+    const {data}=await supabase.from("presets").insert({...p,user_id:userId}).select();
+    if(data) setPresets(prev=>[...prev,data[0]]);
+  },[userId]);
+  const deletePreset=useCallback(async id=>{
+    await supabase.from("presets").delete().eq("id",id);
+    setPresets(prev=>prev.filter(p=>p.id!==id));
+  },[]);
   const signOut=useCallback(async()=>{
     await supabase.auth.signOut(); setTransactions([]); setCategories([]); setDataLoaded(false); setScreen("home");
   },[]);
@@ -454,8 +563,8 @@ function App(){
   return (
     <div dir="rtl" style={{position:"fixed",inset:0,maxWidth:480,margin:"0 auto",background:COLORS.cream,fontFamily:"'Segoe UI',Tahoma,Geneva,Verdana,sans-serif",color:COLORS.textPrimary,display:"flex",flexDirection:"column",overflow:"hidden"}}>
       <div style={{flex:1,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch"}}>
-        {screen==="home" && <HomeScreen transactions={transactions} monthTotals={monthTotals} />}
-        {screen==="add" && <AddScreen categories={categories} onAdd={addTransaction} setScreen={setScreen} />}
+        {screen==="home" && <HomeScreen transactions={transactions} monthTotals={monthTotals} categories={categories} categoryTotals={categoryTotals} presets={presets} setScreen={setScreen} onQuickAdd={(p)=>{ setPendingPreset(p); setScreen("add"); }} />}
+        {screen==="add" && <AddScreen categories={categories} onAdd={addTransaction} setScreen={setScreen} presets={presets} onAddPreset={addPreset} onDeletePreset={deletePreset} pendingPreset={pendingPreset} clearPendingPreset={()=>setPendingPreset(null)} />}
         {screen==="reports" && <ReportsScreen categoryTotals={categoryTotals} monthTotals={monthTotals} />}
         {screen==="budget" && <BudgetScreen categories={categories} categoryTotals={categoryTotals} onSaveCategory={saveCategory} onDeleteCategory={deleteCategory} onAddCategory={addCategory} />}
         {screen==="settings" && <SettingsScreen transactions={transactions} categories={categories} userEmail={session.user.email} onSignOut={signOut} />}
