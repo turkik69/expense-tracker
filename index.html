@@ -421,7 +421,7 @@ function AddScreen({categories,onAdd,setScreen,presets,onAddPreset,onDeletePrese
   );
 }
 
-function ReportsScreen({categoryTotals,monthTotals}){
+function ReportsScreen({categoryTotals,monthTotals,setScreen}){
   const total=monthTotals.expense||1;
   const palette=[COLORS.navy,COLORS.gold,"#3C6E4A","#8A5A3C","#6B6459","#B34537"];
   let cumulative=0;
@@ -430,6 +430,7 @@ function ReportsScreen({categoryTotals,monthTotals}){
   return (
     <Screen>
       <TopBar title="التقارير" />
+      <button onClick={()=>setScreen("archive")} style={{...inputStyle,marginBottom:16,background:COLORS.card,border:`1px solid ${COLORS.border}`,color:COLORS.gold,fontWeight:700,cursor:"pointer",textAlign:"center",boxShadow:`0 2px 10px ${COLORS.shadow}`}}>📦 أرشيف الأشهر السابقة</button>
       <Card style={{marginBottom:16}}>
         <p style={{fontSize:18,fontWeight:700,margin:"0 0 12px"}}>توزيع المصاريف هذا الشهر</p>
         {categoryTotals.length===0 ? <p style={{fontSize:18,color:COLORS.textMuted,textAlign:"center",padding:"20px 0"}}>لا توجد مصاريف مسجلة هذا الشهر بعد.</p> : (
@@ -459,7 +460,60 @@ function ReportsScreen({categoryTotals,monthTotals}){
   );
 }
 
-function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory,onAddCategory,onReorderCategories,monthlyBudget,onSaveMonthlyBudget}){
+function formatDate(d){
+  const dt=new Date(d);
+  const names=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+  return `${dt.getDate()} ${names[dt.getMonth()]} ${dt.getFullYear()}`;
+}
+function ArchiveScreen({archives,periodStart,monthTotals,categoryTotals,monthlyBudget,onResetNow,setScreen}){
+  const [confirming,setConfirming]=useState(false);
+  const doReset=()=>{ onResetNow(); setConfirming(false); };
+  return (
+    <Screen>
+      <TopBar title="الأرشيف" />
+      <Card style={{marginBottom:16}}>
+        <p style={{fontSize:18,fontWeight:700,margin:"0 0 6px"}}>الفترة الحالية</p>
+        <p style={{fontSize:14,color:COLORS.textMuted,margin:"0 0 10px"}}>منذ {periodStart?formatDate(periodStart):"بداية استخدامك للتطبيق"}</p>
+        <p style={{fontSize:16,color:COLORS.textSecondary,margin:"0 0 14px",display:"flex",alignItems:"center",gap:4,flexWrap:"wrap"}}>تم صرف {fmt(monthTotals.expense)}<Riyal size={11}/> من ميزانية {fmt(monthlyBudget)}<Riyal size={11}/></p>
+        {!confirming ? (
+          <button onClick={()=>setConfirming(true)} style={{...inputStyle,background:"#FBEAE7",color:COLORS.danger,border:"none",cursor:"pointer",textAlign:"center",fontWeight:700}}>تصفير العدادات الآن</button>
+        ) : (
+          <div>
+            <p style={{fontSize:14,color:COLORS.danger,margin:"0 0 10px",fontWeight:600}}>بيحفظ أرقام هذي الفترة بالأرشيف، وبعدها الرصيد والعدادات ترجع صفر. عملياتك المسجّلة تبقى محفوظة دائماً ولا تُحذف. متأكدة؟</p>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={doReset} style={{flex:1,...inputStyle,background:COLORS.danger,color:"#fff",border:"none",cursor:"pointer",textAlign:"center",fontWeight:700}}>نعم، صفّري الآن</button>
+              <button onClick={()=>setConfirming(false)} style={{flex:1,...inputStyle,background:"none",border:`1px solid ${COLORS.border}`,cursor:"pointer",textAlign:"center",fontWeight:700}}>إلغاء</button>
+            </div>
+          </div>
+        )}
+      </Card>
+      <p style={{fontSize:18,fontWeight:700,color:COLORS.textSecondary,margin:"4px 0 10px"}}>فترات سابقة</p>
+      {archives.length===0 && <Card><p style={{fontSize:17,color:COLORS.textMuted,textAlign:"center",padding:"10px 0"}}>ما فيه فترات مؤرشفة بعد</p></Card>}
+      <div style={{display:"flex",flexDirection:"column",gap:12}}>
+        {archives.map(a=>(
+          <Card key={a.id}>
+            <p style={{fontSize:17,fontWeight:700,margin:"0 0 8px"}}>{formatDate(a.period_start)} — {formatDate(a.period_end)}</p>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+              <span style={{fontSize:16,color:COLORS.textSecondary}}>المصروف</span>
+              <span style={{fontSize:16,fontWeight:700,display:"flex",alignItems:"center",gap:3}}>{fmt(a.total_expense)}<Riyal size={10}/></span>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:(a.category_breakdown||[]).length?12:0}}>
+              <span style={{fontSize:16,color:COLORS.textSecondary}}>الميزانية</span>
+              <span style={{fontSize:16,fontWeight:700,display:"flex",alignItems:"center",gap:3}}>{fmt(a.budget)}<Riyal size={10}/></span>
+            </div>
+            {(a.category_breakdown||[]).slice(0,4).map(c=>(
+              <div key={c.name} style={{display:"flex",justifyContent:"space-between",padding:"4px 0"}}>
+                <span style={{fontSize:14,color:COLORS.textMuted}}>{c.icon} {c.name}</span>
+                <span style={{fontSize:14,color:COLORS.textMuted,display:"flex",alignItems:"center",gap:2}}>{fmt(c.total)}<Riyal size={9}/></span>
+              </div>
+            ))}
+          </Card>
+        ))}
+      </div>
+    </Screen>
+  );
+}
+function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory,onAddCategory,onReorderCategories,monthlyBudget,onSaveMonthlyBudget,setScreen}){
   const [editing,setEditing]=useState(null); const [newCatName,setNewCatName]=useState(""); const [newCatLimit,setNewCatLimit]=useState(""); const [newCatIcon,setNewCatIcon]=useState("📦");
   const byId=useMemo(()=>Object.fromEntries(categories.map(c=>[c.id,c])),[categories]);
   const sortedIds=useMemo(()=>[...categories].sort((a,b)=>(a.sort_order??0)-(b.sort_order??0)).map(c=>c.id),[categories]);
@@ -504,9 +558,10 @@ function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory
     <Screen>
       <TopBar title="الميزانية الشهرية" />
       <Card style={{marginBottom:16}}>
-        <p style={{fontSize:17,color:COLORS.textMuted,margin:"0 0 6px"}}>الدخل الشهري المخصص للمصاريف</p>
+        <p style={{fontSize:17,color:COLORS.textMuted,margin:"0 0 6px"}}>الدخل الشهري المخصص للمصاريف (هذا الشهر)</p>
         <input type="number" defaultValue={monthlyBudget||""} placeholder="0.000" onBlur={e=>onSaveMonthlyBudget(parseFloat(e.target.value)||0)} style={{...inputStyle,fontSize:20,fontWeight:700,textAlign:"center"}} />
-        <p style={{fontSize:13,color:COLORS.textMuted,margin:"6px 0 0"}}>الرصيد المتبقي بالرئيسية يُحسب من هذا الرقم</p>
+        <p style={{fontSize:13,color:COLORS.textMuted,margin:"6px 0 0"}}>الرصيد المتبقي بالرئيسية يُحسب من هذا الرقم — يبقى كما هو حتى تعدّليه أو تصفّري العدادات بنفسك من الأرشيف</p>
+        <button onClick={()=>setScreen("archive")} style={{...inputStyle,marginTop:10,background:"none",border:`1px solid ${COLORS.border}`,color:COLORS.gold,fontWeight:700,cursor:"pointer",textAlign:"center"}}>عرض أرشيف الأشهر السابقة</button>
       </Card>
       <Card style={{marginBottom:16}}>
         <p style={{fontSize:17,color:COLORS.textMuted,margin:0}}>إجمالي حدود الفئات</p>
@@ -595,7 +650,9 @@ function App(){
   const [categories,setCategories]=useState([]);
   const [presets,setPresets]=useState([]);
   const [pendingPreset,setPendingPreset]=useState(null);
-  const [monthlyBudget,setMonthlyBudget]=useState(0);
+  const [monthlyBudget,setMonthlyBudgetState]=useState(0);
+  const [periodStart,setPeriodStart]=useState(null);
+  const [archives,setArchives]=useState([]);
   const [dataLoaded,setDataLoaded]=useState(false);
   const [configError,setConfigError]=useState(false);
 
@@ -627,8 +684,11 @@ function App(){
         const {data:insertedPre}=await supabase.from("presets").insert(seededPre).select();
         setPresets(insertedPre||[]);
       }
-      const {data:settingsRow}=await supabase.from("settings").select("*").eq("user_id",userId).maybeSingle();
-      setMonthlyBudget(settingsRow?.monthly_budget || 0);
+      const {data:settingsRow}=await supabase.from("app_settings").select("*").eq("user_id",userId).maybeSingle();
+      setMonthlyBudgetState(Number(settingsRow?.monthly_budget||0));
+      setPeriodStart(settingsRow?.period_start || session.user.created_at);
+      const {data:archiveRows}=await supabase.from("monthly_archives").select("*").order("period_end",{ascending:false});
+      setArchives(archiveRows||[]);
       const {data:txs}=await supabase.from("transactions").select("*").order("date",{ascending:false});
       setTransactions(txs||[]); setDataLoaded(true);
     })();
@@ -647,9 +707,16 @@ function App(){
     setTransactions(prev=>prev.filter(t=>t.id!==id));
   },[]);
   const saveMonthlyBudget=useCallback(async value=>{
-    await supabase.from("settings").upsert({user_id:userId,monthly_budget:value},{onConflict:"user_id"});
-    setMonthlyBudget(value);
-  },[userId]);
+    await supabase.from("app_settings").upsert({user_id:userId,monthly_budget:value,period_start:periodStart},{onConflict:"user_id"});
+    setMonthlyBudgetState(value);
+  },[userId,periodStart]);
+  const resetCounters=useCallback(async summary=>{
+    const now=new Date().toISOString();
+    const {data}=await supabase.from("monthly_archives").insert({user_id:userId,period_start:periodStart,period_end:now,...summary}).select();
+    if(data) setArchives(prev=>[data[0],...prev]);
+    await supabase.from("app_settings").upsert({user_id:userId,monthly_budget:monthlyBudget,period_start:now},{onConflict:"user_id"});
+    setPeriodStart(now);
+  },[userId,periodStart,monthlyBudget]);
   const saveCategory=useCallback(async(id,patch)=>{
     await supabase.from("categories").update(patch).eq("id",id);
     setCategories(prev=>prev.map(c=>c.id===id?{...c,...patch}:c));
@@ -680,13 +747,13 @@ function App(){
     await supabase.auth.signOut(); setTransactions([]); setCategories([]); setDataLoaded(false); setScreen("home");
   },[]);
 
-  const thisMonth=monthKey(todayStr());
-  const monthTotals=useMemo(()=>transactions.filter(t=>monthKey(t.date)===thisMonth).reduce((acc,t)=>{ if(t.type==="income") acc.income+=Number(t.amount); else acc.expense+=Number(t.amount); return acc; },{income:0,expense:0}),[transactions,thisMonth]);
+  const periodTx=useMemo(()=>periodStart?transactions.filter(t=>new Date(t.date)>=new Date(periodStart)):transactions,[transactions,periodStart]);
+  const monthTotals=useMemo(()=>periodTx.reduce((acc,t)=>{ if(t.type==="income") acc.income+=Number(t.amount); else acc.expense+=Number(t.amount); return acc; },{income:0,expense:0}),[periodTx]);
   const categoryTotals=useMemo(()=>{
     const map={};
-    transactions.filter(t=>t.type==="expense" && monthKey(t.date)===thisMonth).forEach(t=>{ map[t.category]=(map[t.category]||0)+Number(t.amount); });
+    periodTx.filter(t=>t.type==="expense").forEach(t=>{ map[t.category]=(map[t.category]||0)+Number(t.amount); });
     return Object.entries(map).map(([name,total])=>({name,total,icon:iconFor(categories.find(c=>c.name===name))})).sort((a,b)=>b.total-a.total);
-  },[transactions,thisMonth,categories]);
+  },[periodTx,categories]);
 
   if(configError){
     return (
@@ -705,8 +772,9 @@ function App(){
         <div key={screen} style={{animation:"screenFadeIn .32s ease"}}>
           {screen==="home" && <HomeScreen transactions={transactions} monthTotals={monthTotals} categories={categories} categoryTotals={categoryTotals} presets={presets} setScreen={setScreen} onQuickAdd={(p)=>{ setPendingPreset(p); setScreen("add"); }} username={session.user.user_metadata?.username} monthlyBudget={monthlyBudget} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
           {screen==="add" && <AddScreen categories={categories} onAdd={addTransaction} setScreen={setScreen} presets={presets} onAddPreset={addPreset} onDeletePreset={deletePreset} pendingPreset={pendingPreset} clearPendingPreset={()=>setPendingPreset(null)} />}
-          {screen==="reports" && <ReportsScreen categoryTotals={categoryTotals} monthTotals={monthTotals} />}
-          {screen==="budget" && <BudgetScreen categories={categories} categoryTotals={categoryTotals} onSaveCategory={saveCategory} onDeleteCategory={deleteCategory} onAddCategory={addCategory} onReorderCategories={reorderCategories} monthlyBudget={monthlyBudget} onSaveMonthlyBudget={saveMonthlyBudget} />}
+          {screen==="reports" && <ReportsScreen categoryTotals={categoryTotals} monthTotals={monthTotals} setScreen={setScreen} />}
+          {screen==="archive" && <ArchiveScreen archives={archives} periodStart={periodStart} monthTotals={monthTotals} categoryTotals={categoryTotals} monthlyBudget={monthlyBudget} onResetNow={()=>resetCounters({total_expense:monthTotals.expense,total_income:monthTotals.income,budget:monthlyBudget,category_breakdown:categoryTotals})} setScreen={setScreen} />}
+          {screen==="budget" && <BudgetScreen categories={categories} categoryTotals={categoryTotals} onSaveCategory={saveCategory} onDeleteCategory={deleteCategory} onAddCategory={addCategory} onReorderCategories={reorderCategories} monthlyBudget={monthlyBudget} onSaveMonthlyBudget={saveMonthlyBudget} setScreen={setScreen} />}
           {screen==="settings" && <SettingsScreen transactions={transactions} categories={categories} username={session.user.user_metadata?.username} onSignOut={signOut} />}
         </div>
       </div>
