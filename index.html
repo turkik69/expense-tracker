@@ -44,7 +44,7 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <script type="text/plain" id="app-source">
-const { useState, useEffect, useMemo, useCallback } = React;
+const { useState, useEffect, useMemo, useCallback, useRef } = React;
 const isConfigured = window.SUPABASE_URL && !window.SUPABASE_URL.includes("ضع-هنا") && window.SUPABASE_ANON_KEY && !window.SUPABASE_ANON_KEY.includes("ضع-هنا");
 const supabase = window.supabase.createClient(
   isConfigured ? window.SUPABASE_URL : "https://placeholder.supabase.co",
@@ -459,8 +459,44 @@ function ReportsScreen({categoryTotals,monthTotals}){
   );
 }
 
-function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory,onAddCategory,monthlyBudget,onSaveMonthlyBudget}){
+function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory,onAddCategory,onReorderCategories,monthlyBudget,onSaveMonthlyBudget}){
   const [editing,setEditing]=useState(null); const [newCatName,setNewCatName]=useState(""); const [newCatLimit,setNewCatLimit]=useState(""); const [newCatIcon,setNewCatIcon]=useState("📦");
+  const byId=useMemo(()=>Object.fromEntries(categories.map(c=>[c.id,c])),[categories]);
+  const sortedIds=useMemo(()=>[...categories].sort((a,b)=>(a.sort_order??0)-(b.sort_order??0)).map(c=>c.id),[categories]);
+  const [order,setOrder]=useState(sortedIds);
+  useEffect(()=>{ setOrder(sortedIds); },[categories.length]);
+  const displayOrder=order.filter(id=>byId[id]);
+  const [dragId,setDragId]=useState(null);
+  const [dragDeltaY,setDragDeltaY]=useState(0);
+  const rowRefs=useRef({});
+  const pressTimer=useRef(null);
+  const dragStartY=useRef(0);
+
+  const beginPress=(id,clientY)=>{
+    pressTimer.current=setTimeout(()=>{
+      setDragId(id); dragStartY.current=clientY; setDragDeltaY(0);
+      if(navigator.vibrate) navigator.vibrate(12);
+    },450);
+  };
+  const cancelPress=()=>{ if(pressTimer.current) clearTimeout(pressTimer.current); };
+  const onDragMove=clientY=>{
+    if(!dragId) return;
+    const delta=clientY-dragStartY.current;
+    const idx=displayOrder.indexOf(dragId);
+    const el=rowRefs.current[dragId];
+    const rowHeight=(el?.getBoundingClientRect().height||70)+12;
+    if(delta>rowHeight/2 && idx<displayOrder.length-1){
+      const next=[...displayOrder]; [next[idx],next[idx+1]]=[next[idx+1],next[idx]];
+      setOrder(next); dragStartY.current=clientY; setDragDeltaY(0); return;
+    }
+    if(delta<-rowHeight/2 && idx>0){
+      const next=[...displayOrder]; [next[idx],next[idx-1]]=[next[idx-1],next[idx]];
+      setOrder(next); dragStartY.current=clientY; setDragDeltaY(0); return;
+    }
+    setDragDeltaY(delta);
+  };
+  const endDrag=()=>{ if(dragId) onReorderCategories(displayOrder); setDragId(null); setDragDeltaY(0); };
+
   const totalLimit=categories.reduce((s,c)=>s+Number(c.limit_amount||0),0);
   const totalSpent=categoryTotals.reduce((s,c)=>s+c.total,0);
   const getSpent=name=>categoryTotals.find(c=>c.name===name)?.total||0;
@@ -478,13 +514,26 @@ function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory
         <div style={{height:8,background:COLORS.border,borderRadius:4,overflow:"hidden"}}><div style={{width:`${Math.min(100,(totalSpent/(totalLimit||1))*100)}%`,height:"100%",background:totalSpent>totalLimit?COLORS.danger:COLORS.gold}} /></div>
         <p style={{fontSize:16,color:COLORS.textSecondary,margin:"6px 0 0"}}>تم صرف {fmt(totalSpent)} من {fmt(totalLimit)}</p>
       </Card>
+      <p style={{fontSize:13,color:COLORS.textMuted,margin:"0 0 10px"}}>اضغطي مطولاً على أيقونة أي فئة لسحبها وترتيبها</p>
       <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:16}}>
-        {categories.map(c=>{
+        {displayOrder.map(id=>{
+          const c=byId[id]; if(!c) return null;
           const spent=getSpent(c.name); const pct=Math.min(100,(spent/(c.limit_amount||1))*100); const over=spent>c.limit_amount; const isEditing=editing===c.id;
+          const isDragging=dragId===c.id;
           return (
-            <Card key={c.id}>
+            <div key={c.id} ref={el=>rowRefs.current[c.id]=el} style={{background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:22,padding:20,boxShadow:isDragging?"0 10px 26px rgba(14,61,44,0.24)":`0 3px 12px ${COLORS.shadow}`,transform:isDragging?`translateY(${dragDeltaY}px) scale(1.03)`:"none",position:"relative",zIndex:isDragging?10:1,transition:isDragging?"none":"transform .2s ease, box-shadow .2s ease"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:36,height:36,borderRadius:12,background:COLORS.chipBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{iconFor(c)}</div><span style={{fontSize:18,fontWeight:600}}>{c.name}</span></div>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <div
+                    onTouchStart={e=>beginPress(c.id,e.touches[0].clientY)}
+                    onTouchMove={e=>onDragMove(e.touches[0].clientY)}
+                    onTouchEnd={()=>{cancelPress();endDrag();}}
+                    onTouchCancel={()=>{cancelPress();endDrag();}}
+                    style={{width:36,height:36,borderRadius:12,background:COLORS.chipBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0,touchAction:"none",cursor:"grab"}}>
+                    {iconFor(c)}
+                  </div>
+                  <span style={{fontSize:18,fontWeight:600}}>{c.name}</span>
+                </div>
                 <button onClick={()=>setEditing(isEditing?null:c.id)} style={{background:"none",border:"none",fontSize:17,color:COLORS.textMuted,cursor:"pointer",fontFamily:"inherit"}}>{isEditing?"إغلاق":"تعديل"}</button>
               </div>
               <div style={{height:6,background:COLORS.border,borderRadius:3,overflow:"hidden"}}><div style={{width:`${pct}%`,height:"100%",background:over?COLORS.danger:COLORS.success}} /></div>
@@ -497,7 +546,7 @@ function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory
                   <button onClick={()=>{onDeleteCategory(c.id); setEditing(null);}} style={{...inputStyle,background:"#FBEAE7",color:COLORS.danger,border:"none",cursor:"pointer",textAlign:"center",fontWeight:700}}>حذف الفئة</button>
                 </div>
               )}
-            </Card>
+            </div>
           );
         })}
       </div>
@@ -567,7 +616,7 @@ function App(){
       const {data:cats}=await supabase.from("categories").select("*").order("created_at");
       if(cats && cats.length>0){ setCategories(cats); }
       else {
-        const seeded=DEFAULT_CATEGORIES.map(c=>({...c,user_id:userId}));
+        const seeded=DEFAULT_CATEGORIES.map((c,idx)=>({...c,sort_order:idx,user_id:userId}));
         const {data:inserted}=await supabase.from("categories").insert(seeded).select();
         setCategories(inserted||[]);
       }
@@ -610,9 +659,15 @@ function App(){
     setCategories(prev=>prev.filter(c=>c.id!==id));
   },[]);
   const addCategory=useCallback(async c=>{
-    const {data}=await supabase.from("categories").insert({...c,user_id:userId}).select();
+    const maxOrder=categories.reduce((m,cat)=>Math.max(m,cat.sort_order??0),-1);
+    const {data}=await supabase.from("categories").insert({...c,sort_order:maxOrder+1,user_id:userId}).select();
     if(data) setCategories(prev=>[...prev,data[0]]);
-  },[userId]);
+  },[userId,categories]);
+  const reorderCategories=useCallback(async orderedIds=>{
+    const updates=orderedIds.map((id,idx)=>({id,sort_order:idx}));
+    setCategories(prev=>prev.map(c=>{ const u=updates.find(x=>x.id===c.id); return u?{...c,sort_order:u.sort_order}:c; }));
+    await Promise.all(updates.map(u=>supabase.from("categories").update({sort_order:u.sort_order}).eq("id",u.id)));
+  },[]);
   const addPreset=useCallback(async p=>{
     const {data}=await supabase.from("presets").insert({...p,user_id:userId}).select();
     if(data) setPresets(prev=>[...prev,data[0]]);
@@ -651,7 +706,7 @@ function App(){
           {screen==="home" && <HomeScreen transactions={transactions} monthTotals={monthTotals} categories={categories} categoryTotals={categoryTotals} presets={presets} setScreen={setScreen} onQuickAdd={(p)=>{ setPendingPreset(p); setScreen("add"); }} username={session.user.user_metadata?.username} monthlyBudget={monthlyBudget} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
           {screen==="add" && <AddScreen categories={categories} onAdd={addTransaction} setScreen={setScreen} presets={presets} onAddPreset={addPreset} onDeletePreset={deletePreset} pendingPreset={pendingPreset} clearPendingPreset={()=>setPendingPreset(null)} />}
           {screen==="reports" && <ReportsScreen categoryTotals={categoryTotals} monthTotals={monthTotals} />}
-          {screen==="budget" && <BudgetScreen categories={categories} categoryTotals={categoryTotals} onSaveCategory={saveCategory} onDeleteCategory={deleteCategory} onAddCategory={addCategory} monthlyBudget={monthlyBudget} onSaveMonthlyBudget={saveMonthlyBudget} />}
+          {screen==="budget" && <BudgetScreen categories={categories} categoryTotals={categoryTotals} onSaveCategory={saveCategory} onDeleteCategory={deleteCategory} onAddCategory={addCategory} onReorderCategories={reorderCategories} monthlyBudget={monthlyBudget} onSaveMonthlyBudget={saveMonthlyBudget} />}
           {screen==="settings" && <SettingsScreen transactions={transactions} categories={categories} username={session.user.user_metadata?.username} onSignOut={signOut} />}
         </div>
       </div>
