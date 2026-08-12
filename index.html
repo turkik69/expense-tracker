@@ -59,6 +59,18 @@ const COLORS = {
   danger: "#D9634A", success: "#2F9E52", shadow: "rgba(14,61,44,0.12)", chipBg: "#DCF2E4",
 };
 const CATEGORY_ICONS = { "بقالة":"🛒","مواصلات":"⛽","سكن":"🏠","ترفيه":"🎬","صحة":"💊","تسوق":"🛍️","فواتير":"🧾","مطاعم ومقاهي":"🍽️","أخرى":"📦" };
+const ICON_CHOICES = ["🛒","🍽️","⛽","🏠","🎬","💊","🛍️","🧾","📱","💡","💧","🚗","✈️","🎓","👶","🐾","☕","🎁","🏋️","📚","🔧","👕","🎮","💰","🏥","⚽","📦"];
+function iconFor(c){ return c?.icon || CATEGORY_ICONS[c?.name] || "📦"; }
+function iconForName(name){ return CATEGORY_ICONS[name] || "📦"; }
+function IconPicker({value,onChange}){
+  return (
+    <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:10}}>
+      {ICON_CHOICES.map(ic=>(
+        <button key={ic} onClick={()=>onChange(ic)} type="button" style={{width:44,height:44,borderRadius:12,border:value===ic?`2px solid ${COLORS.navy}`:`1px solid ${COLORS.border}`,background:value===ic?COLORS.chipBg:COLORS.card,fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{ic}</button>
+      ))}
+    </div>
+  );
+}
 const RIYAL_ICON = "data:image/png;base64,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";
 function Riyal({size=14,style={}}){
   return <img src={RIYAL_ICON} alt="ر.ع" style={{height:size,width:"auto",display:"inline-block",verticalAlign:"-0.12em",...style}} />;
@@ -215,9 +227,10 @@ function BottomNav({screen,setScreen}){
 }
 function Card({children,style}){ return <div style={{background:COLORS.card,border:`1px solid ${COLORS.border}`,borderRadius:22,padding:20,boxShadow:`0 3px 12px ${COLORS.shadow}`,...style}}>{children}</div>; }
 
-function HomeScreen({transactions,monthTotals,categories,categoryTotals,presets,onQuickAdd,setScreen,username}){
+function HomeScreen({transactions,monthTotals,categories,categoryTotals,presets,onQuickAdd,setScreen,username,monthlyBudget,onUpdateTransaction,onDeleteTransaction}){
+  const [editingTx,setEditingTx]=useState(null);
   const recent=useMemo(()=>[...transactions].sort((a,b)=>a.date<b.date?1:-1).slice(0,5),[transactions]);
-  const budgetTotal=useMemo(()=>categories.reduce((s,c)=>s+Number(c.limit_amount||0),0)||1,[categories]);
+  const budgetTotal=monthlyBudget||1;
   const budgetPct=Math.min(100,(monthTotals.expense/budgetTotal)*100);
   const topCats=useMemo(()=>[...categoryTotals].sort((a,b)=>b.total-a.total).slice(0,4),[categoryTotals]);
   const maxCat=topCats[0]?.total||1;
@@ -257,7 +270,7 @@ function HomeScreen({transactions,monthTotals,categories,categoryTotals,presets,
           <Card>
             {topCats.map((c,i)=>(
               <div key={c.name} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:i<topCats.length-1?`1px solid ${COLORS.border}`:"none"}}>
-                <div style={{width:38,height:38,borderRadius:12,background:COLORS.chipBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,flexShrink:0}}>{CATEGORY_ICONS[c.name]||"📦"}</div>
+                <div style={{width:38,height:38,borderRadius:12,background:COLORS.chipBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,flexShrink:0}}>{c.icon}</div>
                 <div style={{flex:1,minWidth:0}}>
                   <p style={{fontSize:17,margin:"0 0 4px",fontWeight:600}}>{c.name}</p>
                   <div style={{height:4,borderRadius:99,background:COLORS.border,overflow:"hidden"}}><div style={{height:"100%",width:(c.total/maxCat*100)+"%",background:COLORS.gold,borderRadius:99}} /></div>
@@ -272,15 +285,27 @@ function HomeScreen({transactions,monthTotals,categories,categoryTotals,presets,
       <p style={{fontSize:18,fontWeight:700,color:COLORS.textSecondary,margin:"4px 0 10px"}}>آخر العمليات</p>
       <Card>
         {recent.length===0 && <p style={{fontSize:18,color:COLORS.textMuted,textAlign:"center",padding:"13px 4px"}}>لا توجد عمليات بعد. أضف أول مصروف من زر + في الأسفل.</p>}
-        {recent.map((t,i)=>(
-          <div key={t.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 4px",borderBottom:i<recent.length-1?`1px solid ${COLORS.border}`:"none"}}>
-            <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <div style={{width:42,height:42,borderRadius:14,background:COLORS.chipBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{t.type==="income"?"💰":CATEGORY_ICONS[t.category]||"📦"}</div>
-              <div><p style={{fontSize:18,margin:0,fontWeight:500}}>{t.category}</p>{t.note && <p style={{fontSize:16,margin:0,color:COLORS.textMuted}}>{t.note}</p>}</div>
+        {recent.map((t,i)=>{
+          const isEditing=editingTx===t.id;
+          return (
+          <div key={t.id} style={{padding:"13px 4px",borderBottom:i<recent.length-1?`1px solid ${COLORS.border}`:"none"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer"}} onClick={()=>setEditingTx(isEditing?null:t.id)}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <div style={{width:42,height:42,borderRadius:14,background:COLORS.chipBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{t.type==="income"?"💰":iconFor(categories.find(c=>c.name===t.category))}</div>
+                <div><p style={{fontSize:18,margin:0,fontWeight:500}}>{t.category}</p>{t.note && <p style={{fontSize:16,margin:0,color:COLORS.textMuted}}>{t.note}</p>}</div>
+              </div>
+              <span style={{fontSize:18,fontWeight:700,color:t.type==="income"?COLORS.success:COLORS.danger}}>{t.type==="income"?"+":"-"}{fmt(t.amount)}</span>
             </div>
-            <span style={{fontSize:18,fontWeight:700,color:t.type==="income"?COLORS.success:COLORS.danger}}>{t.type==="income"?"+":"-"}{fmt(t.amount)}</span>
+            {isEditing && (
+              <div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${COLORS.border}`}}>
+                <p style={{fontSize:15,color:COLORS.textSecondary,margin:"0 0 6px",fontWeight:600}}>المبلغ</p>
+                <input type="number" defaultValue={t.amount} onBlur={e=>onUpdateTransaction(t.id,{amount:parseFloat(e.target.value)||t.amount})} style={{...inputStyle,marginBottom:8}} />
+                <button onClick={()=>{onDeleteTransaction(t.id); setEditingTx(null);}} style={{...inputStyle,background:"#FBEAE7",color:COLORS.danger,border:"none",cursor:"pointer",textAlign:"center",fontWeight:700}}>حذف العملية</button>
+              </div>
+            )}
           </div>
-        ))}
+          );
+        })}
       </Card>
     </Screen>
   );
@@ -376,7 +401,7 @@ function AddScreen({categories,onAdd,setScreen,presets,onAddPreset,onDeletePrese
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
             {categories.map(c=>(
               <button key={c.id} onClick={()=>setCategory(c.name)} style={{padding:"10px 4px",borderRadius:10,border:`1px solid ${category===c.name?COLORS.gold:COLORS.border}`,background:category===c.name?"#FBF4DE":COLORS.card,cursor:"pointer",fontFamily:"inherit"}}>
-                <div style={{width:44,height:44,borderRadius:14,background:COLORS.chipBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:25,flexShrink:0}}>{CATEGORY_ICONS[c.name]||"📦"}</div>
+                <div style={{width:44,height:44,borderRadius:14,background:COLORS.chipBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:25,flexShrink:0}}>{iconFor(c)}</div>
                 <div style={{fontSize:15,marginTop:4,color:COLORS.textSecondary}}>{c.name}</div>
               </button>
             ))}
@@ -434,8 +459,8 @@ function ReportsScreen({categoryTotals,monthTotals}){
   );
 }
 
-function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory,onAddCategory}){
-  const [editing,setEditing]=useState(null); const [newCatName,setNewCatName]=useState(""); const [newCatLimit,setNewCatLimit]=useState("");
+function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory,onAddCategory,monthlyBudget,onSaveMonthlyBudget}){
+  const [editing,setEditing]=useState(null); const [newCatName,setNewCatName]=useState(""); const [newCatLimit,setNewCatLimit]=useState(""); const [newCatIcon,setNewCatIcon]=useState("📦");
   const totalLimit=categories.reduce((s,c)=>s+Number(c.limit_amount||0),0);
   const totalSpent=categoryTotals.reduce((s,c)=>s+c.total,0);
   const getSpent=name=>categoryTotals.find(c=>c.name===name)?.total||0;
@@ -443,7 +468,12 @@ function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory
     <Screen>
       <TopBar title="الميزانية الشهرية" />
       <Card style={{marginBottom:16}}>
-        <p style={{fontSize:17,color:COLORS.textMuted,margin:0}}>إجمالي الميزانية</p>
+        <p style={{fontSize:17,color:COLORS.textMuted,margin:"0 0 6px"}}>الدخل الشهري المخصص للمصاريف</p>
+        <input type="number" defaultValue={monthlyBudget||""} placeholder="0.000" onBlur={e=>onSaveMonthlyBudget(parseFloat(e.target.value)||0)} style={{...inputStyle,fontSize:20,fontWeight:700,textAlign:"center"}} />
+        <p style={{fontSize:13,color:COLORS.textMuted,margin:"6px 0 0"}}>الرصيد المتبقي بالرئيسية يُحسب من هذا الرقم</p>
+      </Card>
+      <Card style={{marginBottom:16}}>
+        <p style={{fontSize:17,color:COLORS.textMuted,margin:0}}>إجمالي حدود الفئات</p>
         <p style={{fontSize:29,fontWeight:700,margin:"4px 0 8px",color:COLORS.navy,display:"flex",alignItems:"center",gap:5}}>{fmt(totalLimit)}<Riyal size={18}/></p>
         <div style={{height:8,background:COLORS.border,borderRadius:4,overflow:"hidden"}}><div style={{width:`${Math.min(100,(totalSpent/(totalLimit||1))*100)}%`,height:"100%",background:totalSpent>totalLimit?COLORS.danger:COLORS.gold}} /></div>
         <p style={{fontSize:16,color:COLORS.textSecondary,margin:"6px 0 0"}}>تم صرف {fmt(totalSpent)} من {fmt(totalLimit)}</p>
@@ -454,13 +484,15 @@ function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory
           return (
             <Card key={c.id}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:36,height:36,borderRadius:12,background:COLORS.chipBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{CATEGORY_ICONS[c.name]||"📦"}</div><span style={{fontSize:18,fontWeight:600}}>{c.name}</span></div>
+                <div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:36,height:36,borderRadius:12,background:COLORS.chipBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{iconFor(c)}</div><span style={{fontSize:18,fontWeight:600}}>{c.name}</span></div>
                 <button onClick={()=>setEditing(isEditing?null:c.id)} style={{background:"none",border:"none",fontSize:17,color:COLORS.textMuted,cursor:"pointer",fontFamily:"inherit"}}>{isEditing?"إغلاق":"تعديل"}</button>
               </div>
               <div style={{height:6,background:COLORS.border,borderRadius:3,overflow:"hidden"}}><div style={{width:`${pct}%`,height:"100%",background:over?COLORS.danger:COLORS.success}} /></div>
               <p style={{fontSize:16,color:over?COLORS.danger:COLORS.textSecondary,margin:"6px 0 0",display:"flex",alignItems:"center",gap:3,flexWrap:"wrap"}}>{fmt(spent)} / {fmt(c.limit_amount)}<Riyal size={10}/> {over?"— تجاوزت الميزانية":""}</p>
               {isEditing && (
                 <div style={{marginTop:12,paddingTop:12,borderTop:`1px solid ${COLORS.border}`}}>
+                  <p style={{fontSize:15,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:600}}>أيقونة الفئة</p>
+                  <IconPicker value={iconFor(c)} onChange={ic=>onSaveCategory(c.id,{icon:ic})} />
                   <input type="number" defaultValue={c.limit_amount} onBlur={e=>onSaveCategory(c.id,{limit_amount:parseFloat(e.target.value)||0})} style={{...inputStyle,marginBottom:8}} />
                   <button onClick={()=>{onDeleteCategory(c.id); setEditing(null);}} style={{...inputStyle,background:"#FBEAE7",color:COLORS.danger,border:"none",cursor:"pointer",textAlign:"center",fontWeight:700}}>حذف الفئة</button>
                 </div>
@@ -472,9 +504,11 @@ function BudgetScreen({categories,categoryTotals,onSaveCategory,onDeleteCategory
       <Card>
         <p style={{fontSize:18,fontWeight:700,margin:"0 0 10px"}}>إضافة فئة جديدة</p>
         <input type="text" placeholder="اسم الفئة" value={newCatName} onChange={e=>setNewCatName(e.target.value)} style={{...inputStyle,marginBottom:8}} />
+        <p style={{fontSize:15,color:COLORS.textSecondary,margin:"0 0 8px",fontWeight:600}}>اختاري أيقونة</p>
+        <IconPicker value={newCatIcon} onChange={setNewCatIcon} />
         <p style={{fontSize:17,color:COLORS.textSecondary,margin:"0 0 6px",display:"flex",alignItems:"center",gap:4}}>سقف الميزانية <Riyal size={11}/></p>
         <input type="number" placeholder="0.000" value={newCatLimit} onChange={e=>setNewCatLimit(e.target.value)} style={{...inputStyle,marginBottom:8}} />
-        <button onClick={()=>{ if(!newCatName.trim()) return; onAddCategory({name:newCatName.trim(),limit_amount:parseFloat(newCatLimit)||0}); setNewCatName(""); setNewCatLimit(""); }} style={primaryBtnStyle}>إضافة الفئة</button>
+        <button onClick={()=>{ if(!newCatName.trim()) return; onAddCategory({name:newCatName.trim(),limit_amount:parseFloat(newCatLimit)||0,icon:newCatIcon}); setNewCatName(""); setNewCatLimit(""); setNewCatIcon("📦"); }} style={primaryBtnStyle}>إضافة الفئة</button>
       </Card>
     </Screen>
   );
@@ -512,6 +546,7 @@ function App(){
   const [categories,setCategories]=useState([]);
   const [presets,setPresets]=useState([]);
   const [pendingPreset,setPendingPreset]=useState(null);
+  const [monthlyBudget,setMonthlyBudget]=useState(0);
   const [dataLoaded,setDataLoaded]=useState(false);
   const [configError,setConfigError]=useState(false);
 
@@ -543,6 +578,8 @@ function App(){
         const {data:insertedPre}=await supabase.from("presets").insert(seededPre).select();
         setPresets(insertedPre||[]);
       }
+      const {data:settingsRow}=await supabase.from("settings").select("*").eq("user_id",userId).maybeSingle();
+      setMonthlyBudget(settingsRow?.monthly_budget || 0);
       const {data:txs}=await supabase.from("transactions").select("*").order("date",{ascending:false});
       setTransactions(txs||[]); setDataLoaded(true);
     })();
@@ -551,6 +588,18 @@ function App(){
   const addTransaction=useCallback(async t=>{
     const {data,error}=await supabase.from("transactions").insert({...t,user_id:userId}).select();
     if(!error && data) setTransactions(prev=>[data[0],...prev]);
+  },[userId]);
+  const updateTransaction=useCallback(async(id,patch)=>{
+    await supabase.from("transactions").update(patch).eq("id",id);
+    setTransactions(prev=>prev.map(t=>t.id===id?{...t,...patch}:t));
+  },[]);
+  const deleteTransaction=useCallback(async id=>{
+    await supabase.from("transactions").delete().eq("id",id);
+    setTransactions(prev=>prev.filter(t=>t.id!==id));
+  },[]);
+  const saveMonthlyBudget=useCallback(async value=>{
+    await supabase.from("settings").upsert({user_id:userId,monthly_budget:value},{onConflict:"user_id"});
+    setMonthlyBudget(value);
   },[userId]);
   const saveCategory=useCallback(async(id,patch)=>{
     await supabase.from("categories").update(patch).eq("id",id);
@@ -581,8 +630,8 @@ function App(){
   const categoryTotals=useMemo(()=>{
     const map={};
     transactions.filter(t=>t.type==="expense" && monthKey(t.date)===thisMonth).forEach(t=>{ map[t.category]=(map[t.category]||0)+Number(t.amount); });
-    return Object.entries(map).map(([name,total])=>({name,total})).sort((a,b)=>b.total-a.total);
-  },[transactions,thisMonth]);
+    return Object.entries(map).map(([name,total])=>({name,total,icon:iconFor(categories.find(c=>c.name===name))})).sort((a,b)=>b.total-a.total);
+  },[transactions,thisMonth,categories]);
 
   if(configError){
     return (
@@ -599,10 +648,10 @@ function App(){
     <div dir="rtl" style={{width:"100%",height:"100dvh",background:COLORS.cream,fontFamily:"'Segoe UI',Tahoma,Geneva,Verdana,sans-serif",color:COLORS.textPrimary,display:"flex",flexDirection:"column",overflow:"hidden",paddingTop:"env(safe-area-inset-top)",boxSizing:"border-box"}}>
       <div style={{flex:1,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch"}}>
         <div key={screen} style={{animation:"screenFadeIn .32s ease"}}>
-          {screen==="home" && <HomeScreen transactions={transactions} monthTotals={monthTotals} categories={categories} categoryTotals={categoryTotals} presets={presets} setScreen={setScreen} onQuickAdd={(p)=>{ setPendingPreset(p); setScreen("add"); }} username={session.user.user_metadata?.username} />}
+          {screen==="home" && <HomeScreen transactions={transactions} monthTotals={monthTotals} categories={categories} categoryTotals={categoryTotals} presets={presets} setScreen={setScreen} onQuickAdd={(p)=>{ setPendingPreset(p); setScreen("add"); }} username={session.user.user_metadata?.username} monthlyBudget={monthlyBudget} onUpdateTransaction={updateTransaction} onDeleteTransaction={deleteTransaction} />}
           {screen==="add" && <AddScreen categories={categories} onAdd={addTransaction} setScreen={setScreen} presets={presets} onAddPreset={addPreset} onDeletePreset={deletePreset} pendingPreset={pendingPreset} clearPendingPreset={()=>setPendingPreset(null)} />}
           {screen==="reports" && <ReportsScreen categoryTotals={categoryTotals} monthTotals={monthTotals} />}
-          {screen==="budget" && <BudgetScreen categories={categories} categoryTotals={categoryTotals} onSaveCategory={saveCategory} onDeleteCategory={deleteCategory} onAddCategory={addCategory} />}
+          {screen==="budget" && <BudgetScreen categories={categories} categoryTotals={categoryTotals} onSaveCategory={saveCategory} onDeleteCategory={deleteCategory} onAddCategory={addCategory} monthlyBudget={monthlyBudget} onSaveMonthlyBudget={saveMonthlyBudget} />}
           {screen==="settings" && <SettingsScreen transactions={transactions} categories={categories} username={session.user.user_metadata?.username} onSignOut={signOut} />}
         </div>
       </div>
